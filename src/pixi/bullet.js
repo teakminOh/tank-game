@@ -20,24 +20,23 @@ export class Bullet {
         const texture = await Assets.load('graphics/bullets/bullet.png');
         this.sprite.texture = texture;
 
-        // zmensenie bulletu, lebo obrazok bol moc velky
+        // Zmenšenie bulletu, pretože obrázok bol moc veľký
         const desiredSize = 20;
         this.sprite.width = desiredSize;
         this.sprite.height = desiredSize;
     }
 
     update() {
-        // vypocet smeru pohybu bulletu na zaklade rotacie
-        // ak je tank otoceny dolava, tak aj bullet pojde dolava 
+        // Výpočet smeru pohybu guľky na základe rotácie
         this.sprite.x += Math.cos(this.rotation - Math.PI / 2) * this.speed;
         this.sprite.y += Math.sin(this.rotation - Math.PI / 2) * this.speed;
-
-        // ak je bullet mimo obrazovky, tak sa odstrani
+        //tu som chcel spravit aby naboj nemohol ist za okraje backgroundu pomocou offsetu, ale nejako mi to nefunguje idk preco
+        const offset = 10; 
         if (
-            this.sprite.x < 0 ||
-            this.sprite.x > this.app.renderer.width ||
-            this.sprite.y < 0 ||
-            this.sprite.y > this.app.renderer.height
+            this.sprite.x < -this.sprite.width - offset || 
+            this.sprite.x > this.app.renderer.width + this.sprite.width + offset || 
+            this.sprite.y < -this.sprite.height - offset ||  
+            this.sprite.y > this.app.renderer.height + this.sprite.height + offset  
         ) {
             this.app.stage.removeChild(this.sprite);
             return false;
