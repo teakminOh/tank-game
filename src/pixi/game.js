@@ -1,6 +1,7 @@
 import { Application, Assets, Sprite } from "pixi.js";
 import { createTank } from "./tank";
 import { setupInput } from "./input";
+import { createStartScreen } from './startScreen';
 
 const config = {
 	width: 800,
@@ -18,10 +19,17 @@ async function initPixiApp() {
 		"graphics/background/bg.png"
 	);
 	const background = new Sprite(backgroundTexture);
-  background.width = config.width;
-  background.height = config.height;
+	background.width = config.width;
+	background.height = config.height;
+	app.stage.addChild(background);
+	createStartScreen(app, async () => {
+        await startGame(app);
+    });
+	
+	return app;
+}
 
-  app.stage.addChild(background);
+async function startGame(app) {
 
 	await Assets.load("graphics/bullets/bullet.png");
 
@@ -37,7 +45,6 @@ async function initPixiApp() {
 			}
 		}
 	});
-	return app;
 }
 
 const appPromise = initPixiApp();
