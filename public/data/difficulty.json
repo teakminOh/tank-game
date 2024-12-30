@@ -1,0 +1,9 @@
+{
+	"difficulty": [
+		{ "level": 1, "obstaclesCount": 5 },
+		{ "level": 2, "obstaclesCount": 10 },
+		{ "level": 3, "obstaclesCount": 15 },
+		{ "level": 4, "obstaclesCount": 20 },
+		{ "level": 5, "obstaclesCount": 25 }
+	]
+}

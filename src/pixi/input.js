@@ -18,8 +18,8 @@ export function setupInput(app, tank, bullets) {
     let lastControl = 'mouse';
 
     // Pre výpočet hraníc pohybu
-    const horizontalBoundaryOffset = config.width / 60;
-    const verticalBoundaryOffset = config.height / 40;
+    const horizontalBoundaryOffset = 25;
+    const verticalBoundaryOffset = 25;
 
     // Sledovanie klávesnice
     window.addEventListener('keydown', (e) => {
