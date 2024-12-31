@@ -2,6 +2,7 @@
   <div id="app">
     <div ref="pixiContainer"></div>
   </div>
+  
 </template>
 
 <script>
@@ -28,5 +29,10 @@ export default {
 <style>
 #app {
   text-align: center;
+}
+body{
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 </style>

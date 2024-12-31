@@ -1,12 +1,12 @@
-import { Application, Assets, Sprite } from "pixi.js";
+import { Application, Assets, TilingSprite} from "pixi.js";
 import { createTank } from "./tank";
 import { setupInput } from "./input";
 import { createStartScreen } from './startScreen';
 
 const config = {
-	width: 800,
-	height: 663,
-	backgroundColor: 0x1099bb,
+	width: window.innerWidth,
+	height: window.innerHeight,
+	backgroundColor: 0xffffff,
 };
 
 async function initPixiApp() {
@@ -16,12 +16,34 @@ async function initPixiApp() {
 	document.body.appendChild(app.canvas);
 
 	const backgroundTexture = await Assets.load(
-		"graphics/background/bg.png"
+		"graphics/background/test.png"
 	);
-	const background = new Sprite(backgroundTexture);
-	background.width = config.width;
-	background.height = config.height;
+	const background = new TilingSprite({
+        texture: backgroundTexture,
+        width: app.screen.width,
+        height: app.screen.height,
+    });
 	app.stage.addChild(background);
+
+	// Funkcia na prispôsobenie veľkosti plátna a pozadia
+	function resizeCanvas() {
+        config.width = window.innerWidth; // Aktualizácia šírky
+        config.height = window.innerHeight; // Aktualizácia výšky
+
+        // Zmena veľkosti vykresľovača (renderer)
+        app.renderer.resize(config.width, config.height);
+
+        // Prispôsobenie pozadia
+        background.width = app.screen.width;
+        background.height = app.screen.height;
+    }
+
+    // Prvé prispôsobenie po inicializácii
+    resizeCanvas();
+
+    // Pridanie event listenera na "resize" (zmena veľkosti okna)
+    window.addEventListener("resize", resizeCanvas);
+
 	createStartScreen(app, async () => {
         await startGame(app);
     });

@@ -1,4 +1,3 @@
-import { config } from './game';
 import { Bullet } from './bullet';
 
 export function setupInput(app, tank, bullets) {
@@ -16,10 +15,6 @@ export function setupInput(app, tank, bullets) {
 
     // Sledovanie posledného ovládania: 'mouse' alebo 'keyboard'
     let lastControl = 'mouse';
-
-    // Pre výpočet hraníc pohybu
-    const horizontalBoundaryOffset = config.width / 60;
-    const verticalBoundaryOffset = config.height / 40;
 
     // Sledovanie klávesnice
     window.addEventListener('keydown', (e) => {
@@ -51,7 +46,6 @@ export function setupInput(app, tank, bullets) {
     });
 
     function update() {
-
         if (lastControl === 'mouse') {
             // Pohyb na základe myši
             const dx = mouseX - tank.x;
@@ -59,22 +53,21 @@ export function setupInput(app, tank, bullets) {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > tankRadius) {
-
                 if (Math.abs(dx) > Math.abs(dy)) {
                     // Horizontálny pohyb
-                    if (dx > 0 && tank.x < app.renderer.width - tank.width / 2 - verticalBoundaryOffset) {
+                    if (dx > 0 && tank.x < app.renderer.width - tank.width / 2) {
                         tank.x += speed;
                         tank.rotation = Math.PI / 2;
-                    } else if (dx < 0 && tank.x > tank.width / 2 + verticalBoundaryOffset) {
+                    } else if (dx < 0 && tank.x > tank.width / 2) {
                         tank.x -= speed;
                         tank.rotation = -Math.PI / 2;
                     }
                 } else {
                     // Vertikálny pohyb
-                    if (dy > 0 && tank.y < app.renderer.height - tank.height / 2 - horizontalBoundaryOffset) {
+                    if (dy > 0 && tank.y < app.renderer.height - tank.height / 2) {
                         tank.y += speed;
                         tank.rotation = Math.PI;
-                    } else if (dy < 0 && tank.y > tank.height / 2 + horizontalBoundaryOffset) {
+                    } else if (dy < 0 && tank.y > tank.height / 2) {
                         tank.y -= speed;
                         tank.rotation = 0;
                     }
@@ -82,22 +75,22 @@ export function setupInput(app, tank, bullets) {
             }
         } else if (lastControl === 'keyboard') {
             // Pohyb na základe klávesnice
-            if (keys['ArrowUp'] && !keys['ArrowDown'] && tank.y > tank.height / 2 + verticalBoundaryOffset) {
+            if (keys['ArrowUp'] && !keys['ArrowDown'] && tank.y > tank.height / 2) {
                 tank.y -= speed;
                 tank.rotation = 0;
-            } else if (keys['ArrowDown'] && !keys['ArrowUp'] && tank.y < config.height - tank.height / 2 - verticalBoundaryOffset) {
+            } else if (keys['ArrowDown'] && !keys['ArrowUp'] && tank.y < app.renderer.height - tank.height / 2) {
                 tank.y += speed;
                 tank.rotation = Math.PI;
-            } else if (keys['ArrowLeft'] && !keys['ArrowRight'] && tank.x > tank.width / 2 + horizontalBoundaryOffset) {
+            } else if (keys['ArrowLeft'] && !keys['ArrowRight'] && tank.x > tank.width / 2) {
                 tank.x -= speed;
                 tank.rotation = -Math.PI / 2;
-            } else if (keys['ArrowRight'] && !keys['ArrowLeft'] && tank.x < config.width - tank.width / 2 - horizontalBoundaryOffset) {
+            } else if (keys['ArrowRight'] && !keys['ArrowLeft'] && tank.x < app.renderer.width - tank.width / 2) {
                 tank.x += speed;
                 tank.rotation = Math.PI / 2;
             }
         }
 
-       // Streľba
+        // Streľba
         if ((keys['Space'] || isMouseClicked) && canShoot) {
             canShoot = false; // Prevent further shots during cooldown
 
@@ -110,10 +103,7 @@ export function setupInput(app, tank, bullets) {
                 canShoot = true; // Re-enable shooting after cooldown
             }, shootCooldown);
         }
-
     }
 
     app.ticker.add(update);
 }
-
-    
