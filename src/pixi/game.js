@@ -3,6 +3,7 @@ import { createTank } from "./tank";
 import { setupInput } from "./input";
 import { createStartScreen } from "./startScreen";
 import { showGameOverScreen } from "./gameOverScreen";
+import { Bullet } from "./bullet";
 
 const config = {
 	width: 800,
@@ -47,6 +48,9 @@ async function startGame(app) {
 	const enemyTanks = await loadEnemyTanks();
 	const selectedEnemies = getRandomItems(enemyTanks, 3);
 	renderEntities(app, selectedEnemies);
+
+	let lastShotTime = 0;  // Čas posledného výstrelu
+	const enemyShootCooldown = 10000;
 
 	setupInput(app, tank, bullets);
 
@@ -106,6 +110,15 @@ async function startGame(app) {
 					app.stage.removeChild(tank);
 					resetTankPosition(tank, app);
 					endGame(app);
+				}
+				const distance = Math.sqrt(
+					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
+				);
+				
+				const shootDistance = 200;
+				if (distance < shootDistance) {
+					console.log('shoooting');
+					shoot(app, enemy, bullets, lastShotTime, enemyShootCooldown);
 				}
 			}
 		});
@@ -178,7 +191,6 @@ function getRandomItems(items, count) {
 async function renderEntities(app, entities, options = {}) {
 	for (const entity of entities) {
 		try {
-			console.log("Rendering entity:", entity);
 			const texture = await Assets.load(entity.image);
 			const sprite = new Sprite(texture);
 
@@ -201,6 +213,21 @@ async function renderEntities(app, entities, options = {}) {
 			console.error("Error rendering entity:", error, entity);
 		}
 	}
+}
+
+function shoot(app, enemy, bullets, lastShot, cooldown) {
+	const currentTime = Date.now(); 
+	if (currentTime - lastShot < cooldown) {
+        return; // Ak cooldown ešte neuplynul, nevystrieľame
+    }
+    const bullet = new Bullet(
+        app,        // Predáme aplikáciu
+        enemy.sprite.x,   // Počiatočná pozícia strely
+        enemy.sprite.y,   // Počiatočná pozícia strely
+        enemy.sprite.rotation  // Rotácia strely podľa rotácie nepriateľského tanku
+    );
+    bullets.push(bullet);
+	lastShot = currentTime;
 }
 
 const appPromise = initPixiApp();
