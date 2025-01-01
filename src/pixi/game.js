@@ -41,9 +41,13 @@ async function startGame(app) {
 
 	const currentLevel = 1;
 	const numberOfObstacles = difficulty[currentLevel].obstacleCount;
-	const selectedObstacles = getRandomObstacles(obstacles, numberOfObstacles);
+	const selectedObstacles = getRandomItems(obstacles, numberOfObstacles);
+	renderEntities(app, selectedObstacles, { randomRotation: true });
 
-	renderObstacles(app, selectedObstacles);
+	const enemyTanks = await loadEnemyTanks();
+	const selectedEnemies = getRandomItems(enemyTanks, 3);
+	renderEntities(app, selectedEnemies);
+
 	setupInput(app, tank, bullets);
 
 	app.ticker.add(() => {
@@ -65,6 +69,7 @@ async function startGame(app) {
 				height: obstacle.height,
 			};
 
+
 			const tankRect = {
 				x: tank.x,
 				y: tank.y,
@@ -79,28 +84,53 @@ async function startGame(app) {
 				endGame(app);
 			}
 		});
+		selectedEnemies.forEach((enemy) => {
+			if (enemy.sprite) {
+				if (
+					checkCollision(
+						{
+							x: enemy.sprite.x,
+							y: enemy.sprite.y,
+							width: enemy.sprite.width,
+							height: enemy.sprite.height,
+						},
+						{
+							x: tank.x,
+							y: tank.y,
+							width: tank.width,
+							height: tank.height,
+						}
+					)
+				) {
+					console.log("Collision with enemy tank! Game over.");
+					app.stage.removeChild(tank);
+					resetTankPosition(tank, app);
+					endGame(app);
+				}
+			}
+		});
 	});
 }
 
 function resetTankPosition(tank, app) {
-    tank.x = app.renderer.width / 2;
-    tank.y = app.renderer.height / 2;
+	tank.x = app.renderer.width / 2;
+	tank.y = app.renderer.height / 2;
 }
 
 function endGame(app) {
-    showGameOverScreen(app, () => restartGame(app)); 
+	showGameOverScreen(app, () => restartGame(app));
 }
 
 function restartGame(app) {
-    console.log("Game restarting...");
+	console.log("Game restarting...");
 
-    app.stage.removeChildren();
+	app.stage.removeChildren();
 
 	const backgroundTexture = Assets.get("graphics/background/bg.png");
-    const background = new Sprite(backgroundTexture);
-    background.width = config.width;
-    background.height = config.height;
-    app.stage.addChild(background); 
+	const background = new Sprite(backgroundTexture);
+	background.width = config.width;
+	background.height = config.height;
+	app.stage.addChild(background);
 
 	startGame(app);
 }
@@ -117,32 +147,6 @@ async function loadDifficulty() {
 	return data.difficulty;
 }
 
-function getRandomObstacles(obstacles, count) {
-	const shuffled = obstacles.sort(() => 0.5 - Math.random());
-	return shuffled.slice(0, count);
-}
-
-async function renderObstacles(app, obstacles) {
-	for (const obstacle of obstacles) {
-		try {
-			const texture = await Assets.load(obstacle.image);
-			const sprite = new Sprite(texture);
-
-			sprite.x = obstacle.x;
-			sprite.y = obstacle.y;
-			sprite.width = obstacle.width;
-			sprite.height = obstacle.height;
-			sprite.anchor.set(0.5, 0.5);
-			sprite.rotation = Math.random() * Math.PI * 2;
-
-			app.stage.addChild(sprite);
-			obstacle.sprite = sprite;
-		} catch (error) {
-			console.error("Error rendering obstacle:", error, obstacle);
-		}
-	}
-}
-
 function checkCollision(rect1, rect2) {
 	return (
 		rect1.x < rect2.x + rect2.width &&
@@ -153,12 +157,50 @@ function checkCollision(rect1, rect2) {
 }
 
 function updateObstaclesRotation(obstacles) {
-	obstacles.forEach(obstacle => {
+	obstacles.forEach((obstacle) => {
 		if (obstacle.sprite) {
-			// Zvyšuj rotáciu každým tickom
 			obstacle.sprite.rotation += 0.02;
 		}
 	});
+}
+
+async function loadEnemyTanks() {
+	const response = await fetch("/data/enemyTanks.json");
+	const data = await response.json();
+	return data.enemyTanks;
+}
+
+function getRandomItems(items, count) {
+	const shuffled = items.sort(() => 0.5 - Math.random());
+	return shuffled.slice(0, count);
+}
+
+async function renderEntities(app, entities, options = {}) {
+	for (const entity of entities) {
+		try {
+			console.log("Rendering entity:", entity);
+			const texture = await Assets.load(entity.image);
+			const sprite = new Sprite(texture);
+
+			sprite.x = entity.x;
+			sprite.y = entity.y;
+			sprite.width = entity.width;
+			sprite.height = entity.height;
+			sprite.anchor.set(0.5, 0.5);
+
+			
+			if (options.randomRotation) {
+				sprite.rotation = Math.random() * Math.PI * 2;
+			} else if (entity.direction !== undefined) {
+				sprite.rotation = (entity.direction * Math.PI) / 180;
+			}
+
+			app.stage.addChild(sprite);
+			entity.sprite = sprite;
+		} catch (error) {
+			console.error("Error rendering entity:", error, entity);
+		}
+	}
 }
 
 const appPromise = initPixiApp();
