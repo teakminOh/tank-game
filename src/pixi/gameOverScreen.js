@@ -1,69 +1,38 @@
-import { Text, TextStyle, Container } from "pixi.js";
+import { Text } from "pixi.js";
 
-// Function to show the Game Over screen
 export function showGameOverScreen(app, restartCallback) {
-    app.ticker.stop();
+	app.ticker.stop();
 
-    // Create a container for the Game Over screen
-    const gameOverContainer = new Container();
+	const gameOverText = new Text("Game Over", {
+		fontSize: 50,
+		fill: 0xff0000,
+		align: "center",
+		fontFamily: "PixelifySans",
+	});
 
-    // Define the style for the Game Over text
-    const style = new TextStyle({
-        fontSize: 50,
-        fill: 0xff0000,
-        fontFamily: 'PixelifySans',
-    });
+	gameOverText.x = app.screen.width / 2 - gameOverText.width / 2;
+	gameOverText.y = app.screen.height / 2 - gameOverText.height / 2;
+	app.stage.addChild(gameOverText);
 
-    // Create the Game Over text
-    const gameOverText = new Text({
-        text: "Game Over",
-        style: style,
-    });
-
-    // Add the text to the container
-    gameOverContainer.addChild(gameOverText);
-
-    // Create the Restart button and add it to the container
-    const restartButton = createRestartButton(restartCallback);
-    gameOverContainer.addChild(restartButton);
-
-    // Position the elements within the container
-    gameOverText.x = -gameOverText.width / 2; // Center horizontally
-    gameOverText.y = -gameOverText.height; // Position above the center
-
-    restartButton.x = -restartButton.width / 2; // Center horizontally
-    restartButton.y = 10; // Add some spacing below the Game Over text
-
-    // Position the container in the center of the screen
-    gameOverContainer.x = app.screen.width / 2;
-    gameOverContainer.y = app.screen.height / 2;
-
-    // Add the container to the stage
-    app.stage.addChild(gameOverContainer);
+	createRestartButton(app, restartCallback);
 }
 
-// Function to create the Restart button
-function createRestartButton(restartCallback) {
-    // Define the style for the Restart button text
-    const style = new TextStyle({
-        fontSize: 30,
-        fontFamily: 'PixelifySans',
-        align: "center",
+function createRestartButton(app, restartCallback) {
+    const buttonText = new Text("Restart", { 
+        fontSize: 30, 
+        fontFamily: 'PixelifySans', 
+        fill: 0xffffff
     });
 
-    // Create the Restart button text
-    const buttonText = new Text({
-        text: "Restart",
-        style: style,
-    });
+    buttonText.x = app.screen.width / 2 - buttonText.width / 2; 
+    buttonText.y = app.screen.height / 2 + 40;
 
-    // Make the Restart button interactive
+    app.stage.addChild(buttonText);
+
     buttonText.interactive = true;
     buttonText.buttonMode = true;
-
     buttonText.on("pointerdown", () => {
+        console.log("Restart button clicked");
         restartCallback();
     });
-
-    return buttonText;
 }
