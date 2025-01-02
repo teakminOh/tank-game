@@ -27,8 +27,8 @@ export function setupInput(app, tank, bullets) {
     });
 
     // Sledovanie myši
-    app.view.addEventListener('mousemove', (e) => {
-        const rect = app.view.getBoundingClientRect();
+    app.canvas.addEventListener('mousemove', (e) => {
+        const rect = app.canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
         lastControl = 'mouse'; // Prepnúť na myš
@@ -37,11 +37,11 @@ export function setupInput(app, tank, bullets) {
     let isMouseClicked = false; // Sledovanie kliknutia myši
 
     // Sledovanie kliknutia myši
-    app.view.addEventListener('mousedown', () => {
+    app.canvas.addEventListener('mousedown', () => {
         isMouseClicked = true;
     });
 
-    app.view.addEventListener('mouseup', () => {
+    app.canvas.addEventListener('mouseup', () => {
         isMouseClicked = false;
     });
 
