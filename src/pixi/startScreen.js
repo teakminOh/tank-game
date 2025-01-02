@@ -9,15 +9,11 @@ export function createStartScreen(app, onStart) {
         fill: 0xffffff,
         align: 'center',
         fontFamily: 'PixelifySans',
-<<<<<<< HEAD
     })
     const title = new Text({
         text: 'Welcome to Tank Game!',
         style: style
     })
-=======
-    });
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
     title.y = app.screen.height / 3;
@@ -31,7 +27,6 @@ export function createStartScreen(app, onStart) {
         align: 'center',
         background: 'white',
         fontFamily: 'PixelifySans',
-<<<<<<< HEAD
     })
 
     const startButton = new Text({
@@ -39,9 +34,6 @@ export function createStartScreen(app, onStart) {
         style: styleStartButton
     })
         
-=======
-    });
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     startButton.anchor.set(0.5);
     startButton.x = app.screen.width / 2;
     startButton.y = app.screen.height / 2;
@@ -59,7 +51,6 @@ export function createStartScreen(app, onStart) {
         fontSize: 24,
         fill: 0x000000,
         align: 'center',
-<<<<<<< HEAD
         fontFamily: 'PixelifySans',
     });
 
@@ -67,10 +58,6 @@ export function createStartScreen(app, onStart) {
     const controlsButton = new Text({
         text:'CONTROLS', 
         style: controlsButtonStyle
-=======
-        background: 'white',
-        fontFamily: 'PixelifySans',
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     });
     controlsButton.anchor.set(0.5);
     controlsButton.x = app.screen.width / 2;
@@ -111,7 +98,6 @@ function showControls(app, onBack) {
         fill: 0xffffff,
         align: 'center',
         fontFamily: 'PixelifySans',
-<<<<<<< HEAD
     })
     const title = new Text({
         text: 'Game Controls',
@@ -119,15 +105,11 @@ function showControls(app, onBack) {
     })
         
 
-=======
-    });
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
     title.y = app.screen.height / 5;
     controlsScreen.addChild(title);
 
-<<<<<<< HEAD
     // Controls text
     const styleMove = new TextStyle({
         fontSize: 24,
@@ -139,18 +121,6 @@ function showControls(app, onBack) {
         text: `Move: Arrow Keys\nShoot: Spacebar`,
         style: styleMove
     });
-=======
-    // Text s ovládaním
-    const controlsText = new Text(
-        `Move: Arrow Keys\nShoot: Spacebar`,
-        {
-            fontSize: 24,
-            fill: 0xffffff,
-            align: 'center',
-            fontFamily: 'PixelifySans',
-        }
-    );
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     controlsText.anchor.set(0.5);
     controlsText.x = app.screen.width / 2;
     controlsText.y = app.screen.height / 2;
@@ -161,10 +131,6 @@ function showControls(app, onBack) {
         fontSize: 24,
         fill: 0x000000,
         align: 'center',
-<<<<<<< HEAD
-=======
-        background: 'white',
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
         fontFamily: 'PixelifySans',
     });
     

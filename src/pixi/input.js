@@ -16,13 +16,6 @@ export function setupInput(app, tank, bullets) {
     // Sledovanie posledného ovládania: 'mouse' alebo 'keyboard'
     let lastControl = 'mouse';
 
-<<<<<<< HEAD
-=======
-    // Pre výpočet hraníc pohybu
-    const horizontalBoundaryOffset = 25;
-    const verticalBoundaryOffset = 25;
-
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     // Sledovanie klávesnice
     window.addEventListener('keydown', (e) => {
         keys[e.code] = true;

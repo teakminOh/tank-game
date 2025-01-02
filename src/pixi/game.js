@@ -16,7 +16,6 @@ async function initPixiApp() {
 
 	document.body.appendChild(app.canvas);
 
-<<<<<<< HEAD
 	const backgroundTexture = await Assets.load(
 		"graphics/background/test.png"
 	);
@@ -46,13 +45,6 @@ async function initPixiApp() {
     // Pridanie event listenera na "resize" (zmena veľkosti okna)
     window.addEventListener("resize", resizeCanvas);
 
-=======
-	const backgroundTexture = await Assets.load("graphics/background/bg.png");
-	const background = new Sprite(backgroundTexture);
-	background.width = config.width;
-	background.height = config.height;
-	app.stage.addChild(background);
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
 	createStartScreen(app, async () => {
 		await startGame(app);
 	});
@@ -128,17 +120,12 @@ function restartGame(app) {
 
     app.stage.removeChildren();
 
-<<<<<<< HEAD
 	const backgroundTexture = Assets.get("graphics/background/test.png");
     const background =new TilingSprite({
         texture: backgroundTexture,
         width: app.screen.width,
         height: app.screen.height,
     });
-=======
-	const backgroundTexture = Assets.get("graphics/background/bg.png");
-    const background = new Sprite(backgroundTexture);
->>>>>>> 71b14f9f5f51ea2a3a0bd15a71fa3069ef72f4dd
     background.width = config.width;
     background.height = config.height;
     app.stage.addChild(background); 
