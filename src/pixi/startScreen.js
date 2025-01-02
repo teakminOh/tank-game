@@ -8,10 +8,12 @@ export function createStartScreen(app, onStart) {
         fontSize: 36,
         fill: 0xffffff,
         align: 'center',
+        fontFamily: 'PixelifySans',
     });
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
     title.y = app.screen.height / 3;
+
     startScreen.addChild(title);
 
     // Create start button
@@ -20,6 +22,7 @@ export function createStartScreen(app, onStart) {
         fill: 0x000000,
         align: 'center',
         background: 'white',
+        fontFamily: 'PixelifySans',
     });
     startButton.anchor.set(0.5);
     startButton.x = app.screen.width / 2;
@@ -39,6 +42,7 @@ export function createStartScreen(app, onStart) {
         fill: 0x000000,
         align: 'center',
         background: 'white',
+        fontFamily: 'PixelifySans',
     });
     controlsButton.anchor.set(0.5);
     controlsButton.x = app.screen.width / 2;
@@ -78,6 +82,7 @@ function showControls(app, onBack) {
         fontSize: 36,
         fill: 0xffffff,
         align: 'center',
+        fontFamily: 'PixelifySans',
     });
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
@@ -91,6 +96,7 @@ function showControls(app, onBack) {
             fontSize: 24,
             fill: 0xffffff,
             align: 'center',
+            fontFamily: 'PixelifySans',
         }
     );
     controlsText.anchor.set(0.5);
@@ -104,6 +110,7 @@ function showControls(app, onBack) {
         fill: 0x000000,
         align: 'center',
         background: 'white',
+        fontFamily: 'PixelifySans',
     });
     backButton.anchor.set(0.5);
     backButton.x = app.screen.width / 2;
