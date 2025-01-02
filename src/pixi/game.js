@@ -59,7 +59,7 @@ async function startGame(app) {
 	await Assets.load("graphics/bullets/bullet.png");
 
 	const tank = await createTank(app);
-	const bullets = [];
+	let bullets = [];
 
 	const obstacles = await loadObstacles();
 	const difficulty = await loadDifficulty();
@@ -73,18 +73,20 @@ async function startGame(app) {
 	const selectedEnemies = getRandomItems(enemyTanks, 3);
 	renderEntities(app, selectedEnemies);
 
-	let lastShotTime = 0;  // Čas posledného výstrelu
-	const enemyShootCooldown = 10000;
-
 	setupInput(app, tank, bullets);
 
 	app.ticker.add(() => {
-		// Aktualizuj rotáciu každej prekážky
 		updateObstaclesRotation(selectedObstacles);
-
 		for (let i = bullets.length - 1; i >= 0; i--) {
-			if (!bullets[i].update()) {
-				bullets.splice(i, 1);
+			const bullet = bullets[i];
+			if (!bullet.update()) {
+				bullets.splice(i, 1); 
+			} else if (checkBulletCollision(bullet, tank) && bullet.isEnemy) {
+				console.log("Player hit by bullet! Game over.");
+				app.stage.removeChild(tank);
+				bullets = [];
+				endGame(app);
+				return; 			
 			}
 		}
 
@@ -96,8 +98,6 @@ async function startGame(app) {
 				width: obstacle.width,
 				height: obstacle.height,
 			};
-
-
 			const tankRect = {
 				x: tank.x,
 				y: tank.y,
@@ -112,7 +112,7 @@ async function startGame(app) {
 				endGame(app);
 			}
 		});
-		selectedEnemies.forEach((enemy) => {
+		selectedEnemies.forEach((enemy) => {			
 			if (enemy.sprite) {
 				if (
 					checkCollision(
@@ -135,14 +135,15 @@ async function startGame(app) {
 					resetTankPosition(tank, app);
 					endGame(app);
 				}
+				
+				const enemyShootCooldown = 500;			
+				const shootDistance = 400;
 				const distance = Math.sqrt(
 					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
 				);
-				
-				const shootDistance = 200;
+
 				if (distance < shootDistance) {
-					console.log('shoooting');
-					shoot(app, enemy, bullets, lastShotTime, enemyShootCooldown);
+					shoot(app, enemy, bullets, enemyShootCooldown);
 				}
 			}
 		});
@@ -227,7 +228,6 @@ async function renderEntities(app, entities, options = {}) {
 			sprite.width = entity.width;
 			sprite.height = entity.height;
 			sprite.anchor.set(0.5, 0.5);
-
 			
 			if (options.randomRotation) {
 				sprite.rotation = Math.random() * Math.PI * 2;
@@ -237,25 +237,53 @@ async function renderEntities(app, entities, options = {}) {
 
 			app.stage.addChild(sprite);
 			entity.sprite = sprite;
+
+			entity.lastShotTime = 0;
 		} catch (error) {
 			console.error("Error rendering entity:", error, entity);
 		}
 	}
 }
 
-function shoot(app, enemy, bullets, lastShot, cooldown) {
+function shoot(app, enemy, bullets, cooldown) {
 	const currentTime = Date.now(); 
-	if (currentTime - lastShot < cooldown) {
-        return; // Ak cooldown ešte neuplynul, nevystrieľame
-    }
+
+	if (currentTime - enemy.lastShotTime < cooldown) {
+		return;
+	}
     const bullet = new Bullet(
-        app,        // Predáme aplikáciu
-        enemy.sprite.x,   // Počiatočná pozícia strely
-        enemy.sprite.y,   // Počiatočná pozícia strely
-        enemy.sprite.rotation  // Rotácia strely podľa rotácie nepriateľského tanku
+        app,       
+        enemy.sprite.x,  
+        enemy.sprite.y,  
+        enemy.sprite.rotation,
+		1
     );
+    bullet.sprite.width = 10;
+    bullet.sprite.height = 10;
     bullets.push(bullet);
-	lastShot = currentTime;
+	enemy.lastShotTime  = currentTime;
+}
+
+function checkBulletCollision(bullet, tank) {
+    const bulletRect = {
+        x: bullet.x,
+        y: bullet.y,
+        width: bullet.width,
+        height: bullet.height,
+    };
+
+    const tankRect = {
+        x: tank.x,
+        y: tank.y,
+        width: tank.width,
+        height: tank.height,
+    };
+
+    console.log("Checking collision:");
+    console.log("Bullet rect:", bulletRect);
+    console.log("Tank rect:", tankRect);
+
+    return checkCollision(bulletRect, tankRect);
 }
 
 const appPromise = initPixiApp();
