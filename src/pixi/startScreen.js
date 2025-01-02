@@ -1,15 +1,19 @@
-import { Container, Text } from 'pixi.js';
+import { Container, Text, TextStyle } from 'pixi.js';
 
 export function createStartScreen(app, onStart) {
     const startScreen = new Container();
 
     // Create title
-    const title = new Text('Welcome to Tank Game!', {
+    const style = new TextStyle({
         fontSize: 36,
         fill: 0xffffff,
         align: 'center',
         fontFamily: 'PixelifySans',
-    });
+    })
+    const title = new Text({
+        text: 'Welcome to Tank Game!',
+        style: style
+    })
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
     title.y = app.screen.height / 3;
@@ -17,13 +21,19 @@ export function createStartScreen(app, onStart) {
     startScreen.addChild(title);
 
     // Create start button
-    const startButton = new Text('START GAME', {
+    const styleStartButton = new TextStyle({
         fontSize: 24,
         fill: 0x000000,
         align: 'center',
         background: 'white',
         fontFamily: 'PixelifySans',
-    });
+    })
+
+    const startButton = new Text({
+        text:'START GAME',
+        style: styleStartButton
+    })
+        
     startButton.anchor.set(0.5);
     startButton.x = app.screen.width / 2;
     startButton.y = app.screen.height / 2;
@@ -36,13 +46,18 @@ export function createStartScreen(app, onStart) {
         onStart();
     });
 
-    // Create controls button
-    const controlsButton = new Text('CONTROLS', {
+    // Define TextStyle for the Controls button
+    const controlsButtonStyle = new TextStyle({
         fontSize: 24,
         fill: 0x000000,
         align: 'center',
-        background: 'white',
         fontFamily: 'PixelifySans',
+    });
+
+    // Create the Controls button text using the new syntax
+    const controlsButton = new Text({
+        text:'CONTROLS', 
+        style: controlsButtonStyle
     });
     controlsButton.anchor.set(0.5);
     controlsButton.x = app.screen.width / 2;
@@ -78,40 +93,49 @@ function showControls(app, onBack) {
     const controlsScreen = new Container();
 
     // Title
-    const title = new Text('Game Controls', {
+    const style = new TextStyle({
         fontSize: 36,
         fill: 0xffffff,
         align: 'center',
         fontFamily: 'PixelifySans',
-    });
+    })
+    const title = new Text({
+        text: 'Game Controls',
+        style: style,
+    })
+        
+
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
     title.y = app.screen.height / 5;
     controlsScreen.addChild(title);
 
     // Controls text
-    const controlsText = new Text(
-        `Move: Arrow Keys\nShoot: Spacebar`,
-        {
-            fontSize: 24,
-            fill: 0xffffff,
-            align: 'center',
-            fontFamily: 'PixelifySans',
-        }
-    );
+    const styleMove = new TextStyle({
+        fontSize: 24,
+        fill: 0xffffff,
+        align: 'center',
+        fontFamily: 'PixelifySans',
+    })
+    const controlsText = new Text({
+        text: `Move: Arrow Keys\nShoot: Spacebar`,
+        style: styleMove
+    });
     controlsText.anchor.set(0.5);
     controlsText.x = app.screen.width / 2;
     controlsText.y = app.screen.height / 2;
     controlsScreen.addChild(controlsText);
 
     // Back button
-    const backButton = new Text('BACK', {
+    const backButtonStyle = new TextStyle({
         fontSize: 24,
         fill: 0x000000,
         align: 'center',
-        background: 'white',
         fontFamily: 'PixelifySans',
     });
+    
+    // Create the Back button text using the new syntax
+    const backButton = new Text({text:'BACK', style: backButtonStyle});
     backButton.anchor.set(0.5);
     backButton.x = app.screen.width / 2;
     backButton.y = app.screen.height * 0.75;
