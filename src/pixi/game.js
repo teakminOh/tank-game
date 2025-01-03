@@ -137,7 +137,7 @@ async function startGame(app) {
 				}
 				
 				const enemyShootCooldown = 500;			
-				const shootDistance = 400;
+				const shootDistance = 1000;
 				const distance = Math.sqrt(
 					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
 				);
