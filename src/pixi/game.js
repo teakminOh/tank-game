@@ -17,47 +17,46 @@ async function initPixiApp() {
 
 	document.body.appendChild(app.canvas);
 
-	const backgroundTexture = await Assets.load(
-		"graphics/background/test.png"
-	);
+	const backgroundTexture = await Assets.load("graphics/background/test.png");
 	const background = new TilingSprite({
-        texture: backgroundTexture,
-        width: app.screen.width,
-        height: app.screen.height,
-    });
+		texture: backgroundTexture,
+		width: app.screen.width,
+		height: app.screen.height,
+	});
 	app.stage.addChild(background);
 
 	// Funkcia na prispôsobenie veľkosti plátna a pozadia
 	function resizeCanvas() {
-        config.width = window.innerWidth; // Aktualizácia šírky
-        config.height = window.innerHeight; // Aktualizácia výšky
+		config.width = window.innerWidth; // Aktualizácia šírky
+		config.height = window.innerHeight; // Aktualizácia výšky
 
-        // Zmena veľkosti vykresľovača (renderer)
-        app.renderer.resize(config.width, config.height);
+		// Zmena veľkosti vykresľovača (renderer)
+		app.renderer.resize(config.width, config.height);
 
-        // Prispôsobenie pozadia
-        background.width = app.screen.width;
-        background.height = app.screen.height;
-    }
+		// Prispôsobenie pozadia
+		background.width = app.screen.width;
+		background.height = app.screen.height;
+	}
 
-    // Prvé prispôsobenie po inicializácii
-    resizeCanvas();
+	// Prvé prispôsobenie po inicializácii
+	resizeCanvas();
 
-    // Pridanie event listenera na "resize" (zmena veľkosti okna)
-    window.addEventListener("resize", resizeCanvas);
+	// Pridanie event listenera na "resize" (zmena veľkosti okna)
+	window.addEventListener("resize", resizeCanvas);
 
 	createStartScreen(app, async () => {
+		window.removeEventListener("resize", resizeCanvas);
 		await startGame(app);
 	});
 
 	return app;
 }
 
-async function addExplosionEffect(app, x, y) {
+async function addExplosionEffect(app, x, y, string) {
     // Load explosion textures
     const explosionFrames = [];
     for (let i = 1; i <= 6; i++) {
-        const texture = await Assets.load(`graphics/explosions/explosion${i}.png`);
+        const texture = await Assets.load(`graphics/explosions/${string}${i}.png`);
         explosionFrames.push(texture);
     }
 
@@ -65,9 +64,9 @@ async function addExplosionEffect(app, x, y) {
     const explosion = new AnimatedSprite(explosionFrames);
     explosion.x = x;
     explosion.y = y;
-	explosion.width = 20;
-	explosion.height = 20;
-    explosion.anchor.set(0.5);
+	explosion.width = 30;
+	explosion.height = 30;
+    explosion.anchor.set(0.5,0.5);
     explosion.animationSpeed = 0.3; // Adjust speed
     explosion.loop = false; // Play once
 
@@ -92,17 +91,80 @@ async function startGame(app) {
 
 	const obstacles = await loadObstacles();
 	const difficulty = await loadDifficulty();
-
 	const currentLevel = 1;
+
+	const { enemyTanks, surroundedEnemyTanks } = await loadEnemyTanks();
+
+	const selectedEnemyTanks = generateNonOverlappingObstacles(enemyTanks, tank, 5); // Select 5 from enemyTanks.json
+	const selectedSurroundedEnemyTanks =  generateNonOverlappingObstacles(surroundedEnemyTanks, tank, 3);
+	//createSurroundedObstaclesForTank(selectedSurroundedEnemyTanks, obstacles);
+	selectedSurroundedEnemyTanks.forEach((tank) => {
+		createSurroundedObstaclesForTank(tank, obstacles);
+	});
+	// Combine selected tanks into one array
+	const selectedEnemies = [
+		...selectedEnemyTanks,
+		...selectedSurroundedEnemyTanks,
+	];
+	console.log(obstacles);
+
 	const numberOfObstacles = difficulty[currentLevel].obstacleCount;
-	const selectedObstacles = getRandomItems(obstacles, numberOfObstacles);
+	const selectedObstacles = generateNonOverlappingObstacles(obstacles, tank, numberOfObstacles);
 	renderEntities(app, selectedObstacles, { randomRotation: true });
 
-	const enemyTanks = await loadEnemyTanks();
-	const selectedEnemies = getRandomItems(enemyTanks, 3);
+	//const selectedEnemies = getRandomItems(enemyTanks, 3);
 	renderEntities(app, selectedEnemies);
 
 	setupInput(app, tank, bullets);
+
+	function handleWindowResize(app, selectedObstacles, selectedEnemies, tank) {
+		const previousWidth = app.renderer.width;
+		const previousHeight = app.renderer.height;
+	
+		app.renderer.resize(window.innerWidth, window.innerHeight);
+	
+		const scaleX = app.renderer.width / previousWidth;
+		const scaleY = app.renderer.height / previousHeight;
+	
+		// Adjust obstacle positions
+		selectedObstacles.forEach((obstacle) => {
+			obstacle.x *= scaleX;
+			obstacle.y *= scaleY;
+			if (obstacle.sprite) {
+				obstacle.sprite.x = obstacle.x;
+				obstacle.sprite.y = obstacle.y;
+			}
+		});
+	
+		// Adjust enemy tank positions
+		selectedEnemies.forEach((enemy) => {
+			if (enemy.sprite) {
+				enemy.sprite.x *= scaleX;
+				enemy.sprite.y *= scaleY;
+			}
+		});
+	
+		// Adjust player tank position
+		if (tank) {
+			tank.x *= scaleX;
+			tank.y *= scaleY;
+		}
+	}
+	
+	// Debounced Resize Event
+	let resizeTimeout;
+	function attachResizeListener(app, selectedObstacles, selectedEnemies, tank) {
+		window.addEventListener("resize", () => {
+			clearTimeout(resizeTimeout);
+			resizeTimeout = setTimeout(() => {
+				handleWindowResize(app, selectedObstacles, selectedEnemies, tank);
+			}, 100); // Debounce delay in milliseconds
+		});
+	}
+	
+	// In `startGame`, attach the listener
+	attachResizeListener(app, selectedObstacles, selectedEnemies, tank);
+	
 
 	app.ticker.add(() => {
 		// Rotate obstacles (if applicable)
@@ -137,7 +199,7 @@ async function startGame(app) {
 	
 				if (checkCollision(bulletRect, obstacleRect)) {
 					console.log("Bullet hit an obstacle.");
-					addExplosionEffect(app, bullet.x, bullet.y);
+					addExplosionEffect(app, bullet.x, bullet.y,"explosion");
 					app.stage.removeChild(bullet.sprite); // Remove bullet sprite
 					bullets.splice(i, 1); // Remove bullet from array
 					break; // Exit obstacle collision loop
@@ -148,6 +210,7 @@ async function startGame(app) {
 				// Enemy bullet hitting the player's tank
 				if (checkBulletCollision(bullet, tank)) {
 					console.log("Player hit by enemy bullet! Game over.");
+					// addExplosionEffect(app, bullet.x, bullet.y,"e");
 					app.stage.removeChild(tank);
 					cleanupGame(app, tank, selectedEnemies);
 					return; // Exit ticker
@@ -156,17 +219,21 @@ async function startGame(app) {
 				// Player bullet hitting enemy tanks
 				for (let j = selectedEnemies.length - 1; j >= 0; j--) {
 					const enemy = selectedEnemies[j];
-					if (enemy.sprite && checkBulletCollision(bullet, enemy.sprite)) {
+					if (
+						enemy.sprite &&
+						checkBulletCollision(bullet, enemy.sprite)
+					) {
 						console.log("Enemy tank destroyed by player's bullet!");
-	
+
+						const explosionX = enemy.sprite.x;
+						const explosionY = enemy.sprite.y;
+
+						addExplosionEffect(app, explosionX, explosionY,"e");
 						app.stage.removeChild(enemy.sprite);
 						selectedEnemies.splice(j, 1);
-	
+
 						app.stage.removeChild(bullet.sprite);
 						bullets.splice(i, 1);
-	
-						// Optional: Add an explosion effect or update the score
-						// addExplosionEffect(app, enemy.sprite.x, enemy.sprite.y);
 						break;
 					}
 				}
@@ -191,6 +258,7 @@ async function startGame(app) {
 	
 			if (checkCollision(tankRect, obstacleRect)) {
 				console.log("Tank collided with an obstacle! Game over.");
+				// createExplosionEffect(app, tank.x, tank.y);
 				app.stage.removeChild(tank);
 				cleanupGame(app, tank, selectedEnemies);
 				return;
@@ -225,7 +293,8 @@ async function startGame(app) {
 				const enemyShootCooldown = 500;
 				const shootDistance = 1000;
 				const distance = Math.sqrt(
-					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
+					(enemy.sprite.x - tank.x) ** 2 +
+						(enemy.sprite.y - tank.y) ** 2
 				);
 	
 				if (distance < shootDistance) {
@@ -271,11 +340,43 @@ function checkBulletCollision(bullet, tank) {
     return checkCollision(bulletRect, tankRect);
 }
 
-function resetTankPosition(tank, app) {
-    tank.x = app.screen.width / 2;
-    tank.y = app.screen.height / 2;
+function isPositionColliding(obstacle, tank) {
+    const obstacleRect = {
+        x: obstacle.x - obstacle.width / 2,
+        y: obstacle.y - obstacle.height / 2,
+        width: obstacle.width,
+        height: obstacle.height,
+    };
+
+    const tankRect = {
+        x: tank.x - tank.width / 2,
+        y: tank.y - tank.height / 2,
+        width: tank.width*3,
+        height: tank.height*3,
+    };
+
+    return checkCollision(obstacleRect, tankRect);
 }
 
+function createSurroundedObstaclesForTank(tank, obstacles) {
+	if (Array.isArray(tank.surrounded) && tank.surrounded.length > 0) {
+		tank.surrounded.forEach((position) => {
+			const newObstacle = {
+				x: tank.x + position.x,
+				y: tank.y + position.y,
+				width: 40,
+				height: 40,
+				image: "graphics/obstacles/trap1.png",
+			};
+			obstacles.push(newObstacle);
+		});
+	}
+}
+
+function resetTankPosition(tank, app) {
+	tank.x = app.screen.width / 2;
+	tank.y = app.screen.height / 2;
+}
 
 function endGame(app) {
 	showGameOverScreen(app, () => restartGame(app));
@@ -284,17 +385,17 @@ function endGame(app) {
 function restartGame(app) {
 	console.log("Game restarting...");
 
-    app.stage.removeChildren();
-	
+	app.stage.removeChildren();
+
 	const backgroundTexture = Assets.get("graphics/background/test.png");
-    const background = new TilingSprite({
-        texture: backgroundTexture,
-        width: app.screen.width,
-        height: app.screen.height,
-    });
-    background.width = app.screen.width;
-    background.height = app.screen.height;
-    app.stage.addChild(background); 
+	const background = new TilingSprite({
+		texture: backgroundTexture,
+		width: app.screen.width,
+		height: app.screen.height,
+	});
+	background.width = app.screen.width;
+	background.height = app.screen.height;
+	app.stage.addChild(background);
 
 	startGame(app);
 }
@@ -329,10 +430,51 @@ function updateObstaclesRotation(obstacles) {
 }
 
 async function loadEnemyTanks() {
-	const response = await fetch("/data/enemyTanks.json");
-	const data = await response.json();
-	return data.enemyTanks;
+	const enemyTanksResponse = await fetch("data/enemyTanks.json");
+	const surroundedEnemyTanksResponse = await fetch(
+		"data/surroundedEnemyTanks.json"
+	);
+	const enemyTanks = await enemyTanksResponse.json();
+	const surroundedEnemyTanks = await surroundedEnemyTanksResponse.json();
+
+	return {
+		enemyTanks: enemyTanks.enemyTanks,
+		surroundedEnemyTanks: surroundedEnemyTanks.surroundedEnemyTanks,
+	};
 }
+
+function generateNonOverlappingObstacles(obstacles, tank, count) {
+    const nonOverlappingObstacles = [];
+    const maxAttempts = 100; // Safeguard to prevent infinite loops
+
+    const selectedObstacles = getRandomItems(obstacles, count); // Get a random set of obstacles
+
+    selectedObstacles.forEach((obstacle) => {
+        let attempts = 0;
+
+        // Check for collision and reposition until no collision or max attempts reached
+        while (
+            (isPositionColliding(obstacle, tank) ||
+                nonOverlappingObstacles.some((existing) =>
+                    isPositionColliding(obstacle, existing)
+                )) &&
+            attempts < maxAttempts
+        ) {
+            obstacle.x = Math.random() * (config.width - obstacle.width);
+            obstacle.y = Math.random() * (config.height - obstacle.height);
+            attempts++;
+        }
+
+        if (attempts < maxAttempts) {
+            nonOverlappingObstacles.push(obstacle);
+        } else {
+            console.warn("Failed to place obstacle without overlap after max attempts.");
+        }
+    });
+
+    return nonOverlappingObstacles;
+}
+
 
 function getRandomItems(items, count) {
 	const shuffled = items.sort(() => 0.5 - Math.random());
@@ -350,7 +492,7 @@ async function renderEntities(app, entities, options = {}) {
 			sprite.width = entity.width;
 			sprite.height = entity.height;
 			sprite.anchor.set(0.5, 0.5);
-			
+
 			if (options.randomRotation) {
 				sprite.rotation = Math.random() * Math.PI * 2;
 			} else if (entity.direction !== undefined) {
@@ -368,22 +510,22 @@ async function renderEntities(app, entities, options = {}) {
 }
 
 function shoot(app, enemy, bullets, cooldown) {
-    const currentTime = Date.now(); 
+	const currentTime = Date.now();
 
-    if (currentTime - enemy.lastShotTime < cooldown) {
-        return;
-    }
-    const bullet = new Bullet(
-        app,       
-        enemy.sprite.x,  
-        enemy.sprite.y,  
-        enemy.sprite.rotation,
-        1
-    );
-    bullet.sprite.width = 10;
-    bullet.sprite.height = 10;
-    bullets.push(bullet);
-    enemy.lastShotTime = currentTime;
+	if (currentTime - enemy.lastShotTime < cooldown) {
+		return;
+	}
+	const bullet = new Bullet(
+		app,
+		enemy.sprite.x,
+		enemy.sprite.y,
+		enemy.sprite.rotation,
+		1
+	);
+	bullet.sprite.width = 10;
+	bullet.sprite.height = 10;
+	bullets.push(bullet);
+	enemy.lastShotTime = currentTime;
 }
 
 const appPromise = initPixiApp();
