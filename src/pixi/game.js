@@ -73,8 +73,7 @@ async function startGame(app) {
 	const selectedEnemies = getRandomItems(enemyTanks, 3);
 	renderEntities(app, selectedEnemies);
 
-	let lastShotTime = 0;  // Čas posledného výstrelu
-	const enemyShootCooldown = 10000;
+
 
 	setupInput(app, tank, bullets);
 
@@ -137,14 +136,15 @@ async function startGame(app) {
 					cleanupInput(app);
 					endGame(app);
 				}
+				const enemyShootCooldown = 500;            
+				const shootDistance = 200;
 				const distance = Math.sqrt(
 					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
 				);
-				
-				const shootDistance = 200;
+
 				if (distance < shootDistance) {
 					console.log('shoooting');
-					shoot(app, enemy, bullets, lastShotTime, enemyShootCooldown);
+					shoot(app, enemy, bullets, enemyShootCooldown);
 				}
 			}
 		});
@@ -242,7 +242,7 @@ async function renderEntities(app, entities, options = {}) {
 			app.stage.addChild(sprite);
 			entity.sprite = sprite;
 
-			enemy.lastShotTime = 0;
+			entity.lastShotTime = 0;
 		} catch (error) {
 			console.error("Error rendering entity:", error, entity);
 		}
