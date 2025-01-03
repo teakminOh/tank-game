@@ -1,7 +1,7 @@
 import { Sprite, Assets } from 'pixi.js';
 
 export class Bullet {
-    constructor(app, startX, startY, rotation, isEnemy = 0) {
+    constructor(app, startX, startY, rotation, isEnemy = 1) {
         this.app = app;
         this.speed = 5;
         this.rotation = rotation;
@@ -41,7 +41,11 @@ export class Bullet {
         this.sprite.x += Math.cos(this.rotation - Math.PI / 2) * this.speed;
         this.sprite.y += Math.sin(this.rotation - Math.PI / 2) * this.speed;
 
-        // Skontroluj, či je guľka mimo okna a odstráni ju
+        this.x = this.sprite.x;
+        this.y = this.sprite.y;
+        this.width = this.sprite.width;
+        this.height = this.sprite.height; 
+
         if (
             this.sprite.x < -this.sprite.width  || 
             this.sprite.x > this.app.renderer.width + this.sprite.width|| 

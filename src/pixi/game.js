@@ -79,14 +79,40 @@ async function startGame(app) {
 		updateObstaclesRotation(selectedObstacles);
 		for (let i = bullets.length - 1; i >= 0; i--) {
 			const bullet = bullets[i];
+			//console.log("Bullet position:", bullet.x, bullet.y);
 			if (!bullet.update()) {
-				bullets.splice(i, 1); 
-			} else if (checkBulletCollision(bullet, tank) && bullet.isEnemy) {
-				console.log("Player hit by bullet! Game over.");
-				app.stage.removeChild(tank);
-				bullets = [];
-				endGame(app);
-				return; 			
+				console.log("Bullet removed (out of screen)");
+				bullets.splice(i, 1);
+			} 
+			
+			if (bullet.isEnemy) {
+				// Check if the enemy bullet hits the player's tank
+				if (checkBulletCollision(bullet, tank)) {
+					console.log("Player hit by enemy bullet! Game over.");
+					app.stage.removeChild(tank);
+					resetTankPosition(tank, app);
+					cleanupInput(app);
+					endGame(app);
+					return;
+				}
+			} else {
+				// Check if the player's bullet hits any enemy tank
+				for (let j = selectedEnemies.length - 1; j >= 0; j--) {
+					const enemy = selectedEnemies[j];
+					if (enemy.sprite && checkBulletCollision(bullet, enemy.sprite)) {
+						console.log("Enemy tank destroyed by player's bullet!");
+	
+						app.stage.removeChild(enemy.sprite);
+						selectedEnemies.splice(j, 1);
+	
+						app.stage.removeChild(bullet.sprite);
+						bullets.splice(i, 1);
+	
+						// Optional: Add an explosion effect or update the score
+						//addExplosionEffect(app, enemy.sprite.x, enemy.sprite.y);
+						break;
+					}
+				}
 			}
 		}
 
@@ -98,6 +124,7 @@ async function startGame(app) {
 				width: obstacle.width,
 				height: obstacle.height,
 			};
+
 			const tankRect = {
 				x: tank.x,
 				y: tank.y,
@@ -137,8 +164,7 @@ async function startGame(app) {
 					cleanupInput(app);
 					endGame(app);
 				}
-				
-				const enemyShootCooldown = 500;			
+				const enemyShootCooldown = 500;            
 				const shootDistance = 1000;
 				const distance = Math.sqrt(
 					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
@@ -157,6 +183,7 @@ function resetTankPosition(tank, app) {
     tank.y = app.screen.height / 2;
 }
 
+
 function endGame(app) {
 	showGameOverScreen(app, () => restartGame(app));
 }
@@ -167,7 +194,7 @@ function restartGame(app) {
     app.stage.removeChildren();
 	
 	const backgroundTexture = Assets.get("graphics/background/test.png");
-    const background =new TilingSprite({
+    const background = new TilingSprite({
         texture: backgroundTexture,
         width: app.screen.width,
         height: app.screen.height,
@@ -178,8 +205,6 @@ function restartGame(app) {
 
 	startGame(app);
 }
-
-
 
 async function loadObstacles() {
 	const response = await fetch("/data/obstacles.json");
@@ -249,25 +274,6 @@ async function renderEntities(app, entities, options = {}) {
 	}
 }
 
-function shoot(app, enemy, bullets, cooldown) {
-	const currentTime = Date.now(); 
-
-	if (currentTime - enemy.lastShotTime < cooldown) {
-		return;
-	}
-    const bullet = new Bullet(
-        app,       
-        enemy.sprite.x,  
-        enemy.sprite.y,  
-        enemy.sprite.rotation,
-		1
-    );
-    bullet.sprite.width = 10;
-    bullet.sprite.height = 10;
-    bullets.push(bullet);
-	enemy.lastShotTime  = currentTime;
-}
-
 function checkBulletCollision(bullet, tank) {
     const bulletRect = {
         x: bullet.x,
@@ -282,12 +288,27 @@ function checkBulletCollision(bullet, tank) {
         width: tank.width,
         height: tank.height,
     };
-
-    console.log("Checking collision:");
-    console.log("Bullet rect:", bulletRect);
-    console.log("Tank rect:", tankRect);
-
+	
     return checkCollision(bulletRect, tankRect);
+}
+
+function shoot(app, enemy, bullets, cooldown) {
+    const currentTime = Date.now(); 
+
+    if (currentTime - enemy.lastShotTime < cooldown) {
+        return;
+    }
+    const bullet = new Bullet(
+        app,       
+        enemy.sprite.x,  
+        enemy.sprite.y,  
+        enemy.sprite.rotation,
+        1
+    );
+    bullet.sprite.width = 10;
+    bullet.sprite.height = 10;
+    bullets.push(bullet);
+    enemy.lastShotTime = currentTime;
 }
 
 const appPromise = initPixiApp();
