@@ -241,25 +241,31 @@ async function renderEntities(app, entities, options = {}) {
 
 			app.stage.addChild(sprite);
 			entity.sprite = sprite;
+
+			enemy.lastShotTime = 0;
 		} catch (error) {
 			console.error("Error rendering entity:", error, entity);
 		}
 	}
 }
 
-function shoot(app, enemy, bullets, lastShot, cooldown) {
-	const currentTime = Date.now(); 
-	if (currentTime - lastShot < cooldown) {
-        return; // Ak cooldown ešte neuplynul, nevystrieľame
+function shoot(app, enemy, bullets, cooldown) {
+    const currentTime = Date.now(); 
+
+    if (currentTime - enemy.lastShotTime < cooldown) {
+        return;
     }
     const bullet = new Bullet(
-        app,        // Predáme aplikáciu
-        enemy.sprite.x,   // Počiatočná pozícia strely
-        enemy.sprite.y,   // Počiatočná pozícia strely
-        enemy.sprite.rotation  // Rotácia strely podľa rotácie nepriateľského tanku
+        app,       
+        enemy.sprite.x,  
+        enemy.sprite.y,  
+        enemy.sprite.rotation,
+        1
     );
+    bullet.sprite.width = 10;
+    bullet.sprite.height = 10;
     bullets.push(bullet);
-	lastShot = currentTime;
+    enemy.lastShotTime  = currentTime;
 }
 
 const appPromise = initPixiApp();
