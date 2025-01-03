@@ -41,10 +41,7 @@ export class Bullet {
         this.sprite.x += Math.cos(this.rotation - Math.PI / 2) * this.speed;
         this.sprite.y += Math.sin(this.rotation - Math.PI / 2) * this.speed;
 
-
-        
         // Skontroluj, či je guľka mimo okna a odstráni ju
-        const offset = 10; 
         if (
             this.sprite.x < -this.sprite.width  || 
             this.sprite.x > this.app.renderer.width + this.sprite.width|| 
