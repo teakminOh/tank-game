@@ -1,27 +1,37 @@
-import { Text } from "pixi.js";
-let handleKeydown;
+import { Text, TextStyle, Container } from "pixi.js";
+let handleKeydown, resizeHandler;
 
 export function showGameOverScreen(app, restartCallback) {
-	app.ticker.stop();
+    const gameOverScreen = new Container();
 
-	const gameOverText = new Text("Game Over", {
-		fontSize: 50,
-		fill: 0xff0000,
-		align: "center",
-		fontFamily: "PixelifySans",
-	});
+    // Stop the ticker
+    app.ticker.stop();
 
-	gameOverText.x = app.screen.width / 2 - gameOverText.width / 2;
-	gameOverText.y = app.screen.height / 2 - gameOverText.height / 2;
-	app.stage.addChild(gameOverText);
+    const style = new TextStyle({
+        fontSize: 50,
+        fill: 0xff0000,
+        align: "center",
+        fontFamily: "PixelifySans",
+    });
 
-	createRestartButton(app, restartCallback);
+    const gameOverText = new Text({
+        text: "Game Over",
+        style: style,
+    });
 
-     // Define the keydown handler
-     handleKeydown = (event) => {
+    gameOverText.anchor.set(0.5);
+    gameOverText.x = app.screen.width / 2;
+    gameOverText.y = app.screen.height / 2;
+
+    gameOverScreen.addChild(gameOverText);
+
+    createRestartButton(app, restartCallback, gameOverScreen, gameOverText);
+
+    // Define the keydown handler
+    handleKeydown = (event) => {
         if (event.code === "Space") {
             console.log("Space pressed for restart");
-            cleanup(); // Remove event listener
+            cleanup(); // Remove event listeners
             restartCallback(); // Restart the game
         }
     };
@@ -29,29 +39,41 @@ export function showGameOverScreen(app, restartCallback) {
     // Attach the event listener
     window.addEventListener("keydown", handleKeydown);
 
-    // Cleanup function to remove event listener
+    // Cleanup function to remove event listeners
     const cleanup = () => {
         if (handleKeydown) {
             window.removeEventListener("keydown", handleKeydown);
-            handleKeydown = null; // Clear the reference
+            handleKeydown = null;
+        }
+        if (resizeHandler) {
+            window.removeEventListener("resize", resizeHandler);
+            resizeHandler = null;
         }
     };
 
-    // Call cleanup on game restart
-    app.cleanupGameOverScreen = cleanup; // Attach cleanup to app for global access
+    // Attach cleanup to the app for global access
+    app.cleanupGameOverScreen = cleanup;
+
+    
 }
 
-function createRestartButton(app, restartCallback) {
-    const buttonText = new Text("Restart", { 
-        fontSize: 30, 
-        fontFamily: 'PixelifySans', 
-        fill: 0xffffff
+function createRestartButton(app, restartCallback, gameOverScreen, gameOverText) {
+    const style = new TextStyle({
+        fontSize: 30,
+        fontFamily: "PixelifySans",
+        fill: 0xffffff,
     });
 
-    buttonText.x = app.screen.width / 2 - buttonText.width / 2; 
-    buttonText.y = app.screen.height / 2 + 40;
+    const buttonText = new Text({
+        text: "Restart",
+        style: style,
+    });
 
-    app.stage.addChild(buttonText);
+    buttonText.anchor.set(0.5);
+    buttonText.x = app.screen.width / 2;
+    buttonText.y = app.screen.height / 2 + 60;
+
+    gameOverScreen.addChild(buttonText);
 
     buttonText.interactive = true;
     buttonText.buttonMode = true;
@@ -62,4 +84,19 @@ function createRestartButton(app, restartCallback) {
         }
         restartCallback();
     });
+
+    app.stage.addChild(gameOverScreen);
+
+    // Define resize handler
+    resizeHandler = () => {
+        gameOverText.x = app.screen.width / 2;
+        gameOverText.y = app.screen.height / 2;
+
+        buttonText.x = app.screen.width / 2;
+        buttonText.y = app.screen.height / 2 + 60;
+        app.render();
+    };
+
+    // Attach resize event listener
+    window.addEventListener("resize", resizeHandler);
 }
