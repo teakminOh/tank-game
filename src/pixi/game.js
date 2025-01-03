@@ -91,9 +91,7 @@ async function startGame(app) {
                 console.log("Player hit by bullet! Game over.");
                 app.stage.removeChild(tank);
                 console.log(bullets);
-                resetTankPosition(tank, app);
-                cleanupInput(app);
-                endGame(app);
+                cleanupGame (app,tank,selectedEnemies)
                 return;
             }
         }
@@ -118,9 +116,7 @@ async function startGame(app) {
 			if (checkCollision(tankRect, obstacleRect)) {
 				console.log("Collision detected! Game over.");
 				app.stage.removeChild(tank);
-				resetTankPosition(tank, app);
-				cleanupInput(app);
-				endGame(app);
+				cleanupGame (app,tank,selectedEnemies)
 			}
 		});
 		selectedEnemies.forEach((enemy) => {
@@ -143,12 +139,11 @@ async function startGame(app) {
 				) {
 					console.log("Collision with enemy tank! Game over.");
 					app.stage.removeChild(tank);
-					resetTankPosition(tank, app);
-					cleanupInput(app);
-					endGame(app);
+					cleanupGame (app,tank,selectedEnemies)
+					return
 				}
 				const enemyShootCooldown = 500;            
-				const shootDistance = 200;
+				const shootDistance = 1000;
 				const distance = Math.sqrt(
 					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
 				);
@@ -161,6 +156,22 @@ async function startGame(app) {
 		});
 	});
 }
+function cleanupGame (app,tank,selectedEnemies){
+	resetTankPosition(tank, app);
+	clearEnemies(app,selectedEnemies);
+	cleanupInput(app);
+	endGame(app);
+}
+function clearEnemies(app, enemies) {
+    enemies.forEach((enemy) => {
+        if (enemy.sprite) {
+            app.stage.removeChild(enemy.sprite);
+            enemy.sprite.destroy(); // Destroy PIXI resources
+        }
+    });
+    enemies.length = 0; // Clear the array
+}
+
 
 function checkBulletCollision(bullet, tank) {
     const bulletRect = {
