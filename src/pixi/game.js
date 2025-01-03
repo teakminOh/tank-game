@@ -1,4 +1,4 @@
-import { Application, Assets, TilingSprite,Sprite} from "pixi.js";
+import { Application, Assets, AnimatedSprite, TilingSprite,Sprite} from "pixi.js";
 import { createTank } from "./tank";
 import { setupInput, cleanupInput } from "./input";
 import { createStartScreen } from "./startScreen";
@@ -53,13 +53,42 @@ async function initPixiApp() {
 	return app;
 }
 
+async function addExplosionEffect(app, x, y) {
+    // Load explosion textures
+    const explosionFrames = [];
+    for (let i = 1; i <= 6; i++) {
+        const texture = await Assets.load(`graphics/explosions/explosion${i}.png`);
+        explosionFrames.push(texture);
+    }
+
+    // Create an animated sprite
+    const explosion = new AnimatedSprite(explosionFrames);
+    explosion.x = x;
+    explosion.y = y;
+	explosion.width = 20;
+	explosion.height = 20;
+    explosion.anchor.set(0.5);
+    explosion.animationSpeed = 0.3; // Adjust speed
+    explosion.loop = false; // Play once
+
+    // Add to stage and play
+    app.stage.addChild(explosion);
+    explosion.play();
+
+    // Remove explosion after animation finishes
+    explosion.onComplete = () => {
+        app.stage.removeChild(explosion);
+        explosion.destroy(); // Clean up resources
+    };
+}
+
 async function startGame(app) {
 	app.ticker.start();
 
 	await Assets.load("graphics/bullets/bullet.png");
 
 	const tank = await createTank(app);
-	const bullets = [];
+	let bullets = [];
 
 	const obstacles = await loadObstacles();
 	const difficulty = await loadDifficulty();
@@ -73,30 +102,78 @@ async function startGame(app) {
 	const selectedEnemies = getRandomItems(enemyTanks, 3);
 	renderEntities(app, selectedEnemies);
 
-
-
 	setupInput(app, tank, bullets);
 
 	app.ticker.add(() => {
-		// Aktualizuj rotáciu každej prekážky
+		// Rotate obstacles (if applicable)
 		updateObstaclesRotation(selectedObstacles);
-
+	
 		for (let i = bullets.length - 1; i >= 0; i--) {
-            const bullet = bullets[i];
-            //console.log("Bullet position:", bullet.x, bullet.y);
-            if (!bullet.update()) {
-                console.log("Bullet removed (out of screen)");
-                bullets.splice(i, 1);
-            } else if (checkBulletCollision(bullet, tank) && bullet.isEnemy) {
-                console.log("Player hit by bullet! Game over.");
-                app.stage.removeChild(tank);
-                console.log(bullets);
-                cleanupGame (app,tank,selectedEnemies)
-                return;
-            }
-        }
-
-		// Kontrola kolízií
+			const bullet = bullets[i];
+	
+			// Remove bullets that are off-screen
+			if (!bullet.update()) {
+				console.log("Bullet removed (out of screen)");
+				app.stage.removeChild(bullet.sprite);
+				bullets.splice(i, 1);
+				continue;
+			}
+	
+			// Bullet-Obstacle Collision Check
+			for (const obstacle of selectedObstacles) {
+				const obstacleRect = {
+					x: obstacle.x - obstacle.width / 2, // Adjust for anchor
+					y: obstacle.y - obstacle.height / 2, // Adjust for anchor
+					width: obstacle.width,
+					height: obstacle.height,
+				};
+	
+				const bulletRect = {
+					x: bullet.sprite.x - bullet.sprite.width / 2, // Adjust for anchor
+					y: bullet.sprite.y - bullet.sprite.height / 2, // Adjust for anchor
+					width: bullet.sprite.width,
+					height: bullet.sprite.height,
+				};
+	
+				if (checkCollision(bulletRect, obstacleRect)) {
+					console.log("Bullet hit an obstacle.");
+					addExplosionEffect(app, bullet.x, bullet.y);
+					app.stage.removeChild(bullet.sprite); // Remove bullet sprite
+					bullets.splice(i, 1); // Remove bullet from array
+					break; // Exit obstacle collision loop
+				}
+			}
+	
+			if (bullet.isEnemy) {
+				// Enemy bullet hitting the player's tank
+				if (checkBulletCollision(bullet, tank)) {
+					console.log("Player hit by enemy bullet! Game over.");
+					app.stage.removeChild(tank);
+					cleanupGame(app, tank, selectedEnemies);
+					return; // Exit ticker
+				}
+			} else {
+				// Player bullet hitting enemy tanks
+				for (let j = selectedEnemies.length - 1; j >= 0; j--) {
+					const enemy = selectedEnemies[j];
+					if (enemy.sprite && checkBulletCollision(bullet, enemy.sprite)) {
+						console.log("Enemy tank destroyed by player's bullet!");
+	
+						app.stage.removeChild(enemy.sprite);
+						selectedEnemies.splice(j, 1);
+	
+						app.stage.removeChild(bullet.sprite);
+						bullets.splice(i, 1);
+	
+						// Optional: Add an explosion effect or update the score
+						// addExplosionEffect(app, enemy.sprite.x, enemy.sprite.y);
+						break;
+					}
+				}
+			}
+		}
+	
+		// Check Tank-Obstacle Collisions
 		selectedObstacles.forEach((obstacle) => {
 			const obstacleRect = {
 				x: obstacle.x,
@@ -104,63 +181,66 @@ async function startGame(app) {
 				width: obstacle.width,
 				height: obstacle.height,
 			};
-
-
+	
 			const tankRect = {
 				x: tank.x,
 				y: tank.y,
 				width: tank.width,
 				height: tank.height,
 			};
-
+	
 			if (checkCollision(tankRect, obstacleRect)) {
-				console.log("Collision detected! Game over.");
+				console.log("Tank collided with an obstacle! Game over.");
 				app.stage.removeChild(tank);
-				cleanupGame (app,tank,selectedEnemies)
+				cleanupGame(app, tank, selectedEnemies);
+				return;
 			}
 		});
+	
+		// Check Tank-Enemy Collisions
 		selectedEnemies.forEach((enemy) => {
 			if (enemy.sprite) {
-				if (
-					checkCollision(
-						{
-							x: enemy.sprite.x,
-							y: enemy.sprite.y,
-							width: enemy.sprite.width,
-							height: enemy.sprite.height,
-						},
-						{
-							x: tank.x,
-							y: tank.y,
-							width: tank.width,
-							height: tank.height,
-						}
-					)
-				) {
+				const enemyRect = {
+					x: enemy.sprite.x,
+					y: enemy.sprite.y,
+					width: enemy.sprite.width,
+					height: enemy.sprite.height,
+				};
+	
+				const tankRect = {
+					x: tank.x,
+					y: tank.y,
+					width: tank.width,
+					height: tank.height,
+				};
+	
+				if (checkCollision(tankRect, enemyRect)) {
 					console.log("Collision with enemy tank! Game over.");
 					app.stage.removeChild(tank);
-					cleanupGame (app,tank,selectedEnemies)
-					return
+					cleanupGame(app, tank, selectedEnemies);
+					return;
 				}
-				const enemyShootCooldown = 500;            
+	
+				// Enemy Shooting Logic
+				const enemyShootCooldown = 500;
 				const shootDistance = 1000;
 				const distance = Math.sqrt(
 					(enemy.sprite.x - tank.x) ** 2 + (enemy.sprite.y - tank.y) ** 2
 				);
-
+	
 				if (distance < shootDistance) {
-					console.log('shoooting');
 					shoot(app, enemy, bullets, enemyShootCooldown);
 				}
 			}
 		});
 	});
+	
 }
 function cleanupGame (app,tank,selectedEnemies){
 	resetTankPosition(tank, app);
 	clearEnemies(app,selectedEnemies);
 	cleanupInput(app);
-	endGame(app);
+	endGame(app); 
 }
 function clearEnemies(app, enemies) {
     enemies.forEach((enemy) => {
@@ -196,6 +276,7 @@ function resetTankPosition(tank, app) {
     tank.y = app.screen.height / 2;
 }
 
+
 function endGame(app) {
 	showGameOverScreen(app, () => restartGame(app));
 }
@@ -206,7 +287,7 @@ function restartGame(app) {
     app.stage.removeChildren();
 	
 	const backgroundTexture = Assets.get("graphics/background/test.png");
-    const background =new TilingSprite({
+    const background = new TilingSprite({
         texture: backgroundTexture,
         width: app.screen.width,
         height: app.screen.height,
@@ -217,8 +298,6 @@ function restartGame(app) {
 
 	startGame(app);
 }
-
-
 
 async function loadObstacles() {
 	const response = await fetch("/data/obstacles.json");
@@ -271,7 +350,6 @@ async function renderEntities(app, entities, options = {}) {
 			sprite.width = entity.width;
 			sprite.height = entity.height;
 			sprite.anchor.set(0.5, 0.5);
-
 			
 			if (options.randomRotation) {
 				sprite.rotation = Math.random() * Math.PI * 2;
@@ -305,7 +383,7 @@ function shoot(app, enemy, bullets, cooldown) {
     bullet.sprite.width = 10;
     bullet.sprite.height = 10;
     bullets.push(bullet);
-    enemy.lastShotTime  = currentTime;
+    enemy.lastShotTime = currentTime;
 }
 
 const appPromise = initPixiApp();

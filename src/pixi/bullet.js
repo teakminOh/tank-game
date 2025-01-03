@@ -13,17 +13,26 @@ export class Bullet {
         this.sprite.rotation = rotation;
 
         app.stage.addChild(this.sprite);
+        
+        // Načítame textúru a až potom nastavíme sprite
         this.loadTexture();
     }
 
     async loadTexture() {
-        const texture = await Assets.load('graphics/bullets/bullet.png');
-        this.sprite.texture = texture;
+        try {
+            const texture = await Assets.load('graphics/bullets/bullet.png');
+            this.sprite.texture = texture;
 
-        // Zmenšenie bulletu, pretože obrázok bol moc veľký
-        const desiredSize = 20;
-        this.sprite.width = desiredSize;
-        this.sprite.height = desiredSize;
+            // Zmenšenie bulletu, pretože obrázok bol moc veľký
+            const desiredSize = 20;
+            this.sprite.width = desiredSize;
+            this.sprite.height = desiredSize;
+
+            // Po načítaní textúry bude sprite vykreslený správne
+            console.log('Bullet texture loaded successfully');
+        } catch (error) {
+            console.error('Failed to load bullet texture:', error);
+        }
     }
 
     update() {
@@ -45,6 +54,7 @@ export class Bullet {
             this.app.stage.removeChild(this.sprite);
             return false;
         }
+
         return true;
     }
 }
