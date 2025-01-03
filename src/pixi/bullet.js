@@ -1,11 +1,11 @@
 import { Sprite, Assets } from 'pixi.js';
 
 export class Bullet {
-    constructor(app, startX, startY, rotation) {
+    constructor(app, startX, startY, rotation, isEnemy = 1){
         this.app = app;
         this.speed = 5;
         this.rotation = rotation;
-
+        this.isEnemy = isEnemy;
         this.sprite = new Sprite();
         this.sprite.x = startX;
         this.sprite.y = startY;
@@ -30,6 +30,11 @@ export class Bullet {
         // Výpočet smeru pohybu guľky na základe rotácie
         this.sprite.x += Math.cos(this.rotation - Math.PI / 2) * this.speed;
         this.sprite.y += Math.sin(this.rotation - Math.PI / 2) * this.speed;
+
+        this.x = this.sprite.x;
+        this.y = this.sprite.y;
+        this.width = this.sprite.width;
+        this.height = this.sprite.height;
 
         if (
             this.sprite.x < -this.sprite.width  || 

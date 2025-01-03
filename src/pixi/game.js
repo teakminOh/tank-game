@@ -82,10 +82,21 @@ async function startGame(app) {
 		updateObstaclesRotation(selectedObstacles);
 
 		for (let i = bullets.length - 1; i >= 0; i--) {
-			if (!bullets[i].update()) {
-				bullets.splice(i, 1);
-			}
-		}
+            const bullet = bullets[i];
+            //console.log("Bullet position:", bullet.x, bullet.y);
+            if (!bullet.update()) {
+                console.log("Bullet removed (out of screen)");
+                bullets.splice(i, 1);
+            } else if (checkBulletCollision(bullet, tank) && bullet.isEnemy) {
+                console.log("Player hit by bullet! Game over.");
+                app.stage.removeChild(tank);
+                console.log(bullets);
+                resetTankPosition(tank, app);
+                cleanupInput(app);
+                endGame(app);
+                return;
+            }
+        }
 
 		// Kontrola kolízií
 		selectedObstacles.forEach((obstacle) => {
@@ -149,6 +160,24 @@ async function startGame(app) {
 			}
 		});
 	});
+}
+
+function checkBulletCollision(bullet, tank) {
+    const bulletRect = {
+        x: bullet.x,
+        y: bullet.y,
+        width: bullet.width,
+        height: bullet.height,
+    };
+
+    const tankRect = {
+        x: tank.x,
+        y: tank.y,
+        width: tank.width,
+        height: tank.height,
+    };
+
+    return checkCollision(bulletRect, tankRect);
 }
 
 function resetTankPosition(tank, app) {

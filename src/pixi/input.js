@@ -95,7 +95,7 @@ export function setupInput(app, tank, bullets) {
         if ((keys['Space'] || isMouseClicked) && canShoot) {
             canShoot = false;
 
-            const bullet = new Bullet(app, tank.x, tank.y, tank.rotation);
+            const bullet = new Bullet(app, tank.x, tank.y, tank.rotation, 0);
             bullets.push(bullet);
 
             setTimeout(() => {
