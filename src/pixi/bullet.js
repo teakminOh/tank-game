@@ -30,7 +30,6 @@ export class Bullet {
         // Výpočet smeru pohybu guľky na základe rotácie
         this.sprite.x += Math.cos(this.rotation - Math.PI / 2) * this.speed;
         this.sprite.y += Math.sin(this.rotation - Math.PI / 2) * this.speed;
-        //tu som chcel spravit aby naboj nemohol ist za okraje backgroundu pomocou offsetu, ale nejako mi to nefunguje idk preco
 
         if (
             this.sprite.x < -this.sprite.width  || 

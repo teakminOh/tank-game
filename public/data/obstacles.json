@@ -2,15 +2,15 @@
 	"obstacles": [
 		{
 			"id": 1,
-			"x": 100,
-			"y": 100,
-			"width": 30,
-			"height": 30,
+			"x": 150,
+			"y": 150,
+			"width": 40,
+			"height": 40,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 2,
-			"x": 200,
+			"x": 400,
 			"y": 150,
 			"width": 50,
 			"height": 50,
@@ -18,8 +18,8 @@
 		},
 		{
 			"id": 3,
-			"x": 70,
-			"y": 500,
+			"x": 250,
+			"y": 400,
 			"width": 40,
 			"height": 40,
 			"image": "graphics/obstacles/trap1.png"
