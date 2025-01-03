@@ -134,6 +134,7 @@ async function startGame(app) {
 					console.log("Collision with enemy tank! Game over.");
 					app.stage.removeChild(tank);
 					resetTankPosition(tank, app);
+					cleanupInput(app);
 					endGame(app);
 				}
 				const distance = Math.sqrt(
