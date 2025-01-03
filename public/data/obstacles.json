@@ -10,7 +10,7 @@
 		},
 		{
 			"id": 2,
-			"x": 400,
+			"x": 300,
 			"y": 150,
 			"width": 50,
 			"height": 50,
@@ -18,22 +18,38 @@
 		},
 		{
 			"id": 3,
-			"x": 250,
-			"y": 400,
+			"x": 450,
+			"y": 150,
 			"width": 40,
 			"height": 40,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 4,
-			"x": 590,
-			"y": 250,
-			"width": 60,
-			"height": 60,
+			"x": 1550,
+			"y": 150,
+			"width": 45,
+			"height": 45,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 5,
+			"x": 1800,
+			"y": 150,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 6,
+			"x": 2050,
+			"y": 150,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 7,
 			"x": 550,
 			"y": 500,
 			"width": 45,

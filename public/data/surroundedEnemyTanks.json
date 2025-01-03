@@ -1,0 +1,182 @@
+{
+	"surroundedEnemyTanks": [
+		{
+			"id": 1,
+			"x": 150,
+			"y": 200,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": 180,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 2,
+			"x": 500,
+			"y": 200,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 3,
+			"x": 900,
+			"y": 200,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 3,
+			"x": 150,
+			"y": 500,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": 0,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 5,
+			"x": 500,
+			"y": 500,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 6,
+			"x": 900,
+			"y": 500,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 7,
+			"x": 150,
+			"y": 800,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 8,
+			"x": 500,
+			"y": 800,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 9,
+			"x": 900,
+			"y": 800,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		},
+        {
+			"id": 10,
+			"x": 100,
+			"y": 600,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90,
+			"surrounded": [
+				{ "x": -50, "y": -50 },
+				{ "x": 50, "y": -50 },
+				{ "x": 0, "y": -50 },
+				{ "x": -50, "y": 50 },
+				{ "x": 50, "y": 0 },
+				{ "x": 0, "y": 50 },
+				{ "x": 50, "y": 50 }
+			]
+		}
+	]
+}

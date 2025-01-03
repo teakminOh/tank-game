@@ -29,8 +29,6 @@ export class Bullet {
             this.sprite.width = desiredSize;
             this.sprite.height = desiredSize;
 
-            // Po načítaní textúry bude sprite vykreslený správne
-            console.log('Bullet texture loaded successfully');
         } catch (error) {
             console.error('Failed to load bullet texture:', error);
         }
