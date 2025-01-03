@@ -31,12 +31,12 @@ export class Bullet {
         this.sprite.x += Math.cos(this.rotation - Math.PI / 2) * this.speed;
         this.sprite.y += Math.sin(this.rotation - Math.PI / 2) * this.speed;
         //tu som chcel spravit aby naboj nemohol ist za okraje backgroundu pomocou offsetu, ale nejako mi to nefunguje idk preco
-        const offset = 10; 
+
         if (
-            this.sprite.x < -this.sprite.width - offset || 
-            this.sprite.x > this.app.renderer.width + this.sprite.width + offset || 
-            this.sprite.y < -this.sprite.height - offset ||  
-            this.sprite.y > this.app.renderer.height + this.sprite.height + offset  
+            this.sprite.x < -this.sprite.width  || 
+            this.sprite.x > this.app.renderer.width + this.sprite.width|| 
+            this.sprite.y < -this.sprite.height ||  
+            this.sprite.y > this.app.renderer.height + this.sprite.height 
         ) {
             this.app.stage.removeChild(this.sprite);
             return false;

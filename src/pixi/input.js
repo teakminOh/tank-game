@@ -1,5 +1,6 @@
 import { Bullet } from './bullet';
-
+let updateReference;
+let inputListeners = {};
 export function setupInput(app, tank, bullets) {
     const speed = 4;
     const keys = {};
@@ -16,35 +17,36 @@ export function setupInput(app, tank, bullets) {
     // Sledovanie posledného ovládania: 'mouse' alebo 'keyboard'
     let lastControl = 'mouse';
 
-    // Sledovanie klávesnice
-    window.addEventListener('keydown', (e) => {
+    let isMouseClicked = false;
+
+    // Define input handlers
+    inputListeners.handleKeydown = (e) => {
         keys[e.code] = true;
-        lastControl = 'keyboard'; // Prepnúť na klávesnicu
-    });
-
-    window.addEventListener('keyup', (e) => {
+        lastControl = 'keyboard';
+    };
+    inputListeners.handleKeyup = (e) => {
         keys[e.code] = false;
-    });
-
-    // Sledovanie myši
-    app.canvas.addEventListener('mousemove', (e) => {
+    };
+    inputListeners.handleMousemove = (e) => {
         const rect = app.canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
-        lastControl = 'mouse'; // Prepnúť na myš
-    });
-
-    let isMouseClicked = false; // Sledovanie kliknutia myši
-
-    // Sledovanie kliknutia myši
-    app.canvas.addEventListener('mousedown', () => {
+        lastControl = 'mouse';
+    };
+    inputListeners.handleMousedown = () => {
         isMouseClicked = true;
-    });
-
-    app.canvas.addEventListener('mouseup', () => {
+    };
+    inputListeners.handleMouseup = () => {
         isMouseClicked = false;
-    });
+    };
 
+    // Attach listeners
+    window.addEventListener('keydown', inputListeners.handleKeydown);
+    window.addEventListener('keyup', inputListeners.handleKeyup);
+    app.canvas.addEventListener('mousemove', inputListeners.handleMousemove);
+    app.canvas.addEventListener('mousedown', inputListeners.handleMousedown);
+    app.canvas.addEventListener('mouseup', inputListeners.handleMouseup);
+    
     function update() {
         if (lastControl === 'mouse') {
             // Pohyb na základe myši
@@ -104,6 +106,24 @@ export function setupInput(app, tank, bullets) {
             }, shootCooldown);
         }
     }
-
+    // Add update function to the ticker
+    updateReference = update;
     app.ticker.add(update);
+}
+
+export function cleanupInput(app) {
+    // Remove input listeners
+    if (inputListeners.handleKeydown) {
+        window.removeEventListener('keydown', inputListeners.handleKeydown);
+        window.removeEventListener('keyup', inputListeners.handleKeyup);
+        app.canvas.removeEventListener('mousemove', inputListeners.handleMousemove);
+        app.canvas.removeEventListener('mousedown', inputListeners.handleMousedown);
+        app.canvas.removeEventListener('mouseup', inputListeners.handleMouseup);
+    }
+
+    // Clear update function
+    if (updateReference) {
+        app.ticker.remove(updateReference);
+        updateReference = null;
+    }
 }

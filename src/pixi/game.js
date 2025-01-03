@@ -1,6 +1,6 @@
 import { Application, Assets, TilingSprite,Sprite} from "pixi.js";
 import { createTank } from "./tank";
-import { setupInput } from "./input";
+import { setupInput, cleanupInput } from "./input";
 import { createStartScreen } from "./startScreen";
 import { showGameOverScreen } from "./gameOverScreen";
 
@@ -100,6 +100,7 @@ async function startGame(app) {
 				console.log("Collision detected! Game over.");
 				app.stage.removeChild(tank);
 				resetTankPosition(tank, app);
+				cleanupInput(app);
 				endGame(app);
 			}
 		});
@@ -107,8 +108,8 @@ async function startGame(app) {
 }
 
 function resetTankPosition(tank, app) {
-    tank.x = app.renderer.width / 2;
-    tank.y = app.renderer.height / 2;
+    tank.x = app.screen.width / 2;
+    tank.y = app.screen.height / 2;
 }
 
 function endGame(app) {
@@ -119,19 +120,21 @@ function restartGame(app) {
     console.log("Game restarting...");
 
     app.stage.removeChildren();
-
+	
 	const backgroundTexture = Assets.get("graphics/background/test.png");
     const background =new TilingSprite({
         texture: backgroundTexture,
         width: app.screen.width,
         height: app.screen.height,
     });
-    background.width = config.width;
-    background.height = config.height;
+    background.width = app.screen.width;
+    background.height = app.screen.height;
     app.stage.addChild(background); 
 
 	startGame(app);
 }
+
+
 
 async function loadObstacles() {
 	const response = await fetch("/data/obstacles.json");
