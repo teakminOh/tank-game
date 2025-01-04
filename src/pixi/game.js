@@ -4,6 +4,11 @@ import { setupInput, cleanupInput } from "./input";
 import { createStartScreen } from "./startScreen";
 import { showGameOverScreen } from "./gameOverScreen";
 import { Bullet } from "./bullet";
+import { displayCongratulations } from "./congratulationsScreen";
+import { displayFinish } from "./finishGameScreen";
+
+let currentLevel = 1;
+let hit = 0;
 
 const config = {
 	width: window.innerWidth,
@@ -82,43 +87,38 @@ async function addExplosionEffect(app, x, y, string) {
 }
 
 async function startGame(app) {
-	app.ticker.start();
-
-	await Assets.load("graphics/bullets/bullet.png");
-
 	const tank = await createTank(app);
-	let bullets = [];
-
+	
 	const obstacles = await loadObstacles();
-	const difficulty = await loadDifficulty();
-	const currentLevel = 1;
-
+	
+	
 	const { enemyTanks, surroundedEnemyTanks } = await loadEnemyTanks();
-
-	const selectedEnemyTanks = generateNonOverlappingObstacles(enemyTanks, tank, 5); // Select 5 from enemyTanks.json
-	const selectedSurroundedEnemyTanks =  generateNonOverlappingObstacles(surroundedEnemyTanks, tank, 3);
+	
+	const selectedEnemyTanks = generateNonOverlappingObstacles(enemyTanks, tank, currentLevel); // Select 5 from enemyTanks.json
+	const selectedSurroundedEnemyTanks =  generateNonOverlappingObstacles(surroundedEnemyTanks, tank, 1);
 	//createSurroundedObstaclesForTank(selectedSurroundedEnemyTanks, obstacles);
 	selectedSurroundedEnemyTanks.forEach((tank) => {
 		createSurroundedObstaclesForTank(tank, obstacles);
-	});
-	// Combine selected tanks into one array
+		});
+		// Combine selected tanks into one array
 	const selectedEnemies = [
 		...selectedEnemyTanks,
 		...selectedSurroundedEnemyTanks,
-	];
+		];
+	renderEntities(app, selectedEnemies);
 	console.log(obstacles);
-
-	const numberOfObstacles = difficulty[currentLevel].obstacleCount;
+	app.ticker.start();
+	const difficulty = await loadDifficulty();
+			
+	await Assets.load("graphics/bullets/bullet.png");
+	let bullets = [];
+	const numberOfObstacles = difficulty[currentLevel-1].obstacleCount;
 	const selectedObstacles = generateNonOverlappingObstacles(obstacles, tank, numberOfObstacles);
 	renderEntities(app, selectedObstacles, { randomRotation: true });
 
 	//const selectedEnemies = getRandomItems(enemyTanks, 3);
-	renderEntities(app, selectedEnemies);
-
+	
 	setupInput(app, tank, bullets);
-
-	
-	
 
 	app.ticker.add(() => {
 		// Rotate obstacles (if applicable)
@@ -177,6 +177,7 @@ async function startGame(app) {
 						enemy.sprite &&
 						checkBulletCollision(bullet, enemy.sprite)
 					) {
+						hit++;
 						console.log("Enemy tank destroyed by player's bullet!");
 
 						const explosionX = enemy.sprite.x;
@@ -190,10 +191,29 @@ async function startGame(app) {
 						bullets.splice(i, 1);
 						break;
 					}
+				}	
+			}
+			if (hit === currentLevel+1) {
+				hit = 0;
+				console.log("All enemies defeated!");
+				app.stage.removeChild(tank);
+				resetTankPosition(tank, app);
+				clearEnemies(app,selectedEnemies);
+				cleanupInput(app);
+				if (currentLevel < 5) {
+					console.log(currentLevel)
+					displayCongratulations(app, () => goToNextLevel(app), currentLevel);
+				} else {
+					console.log(currentLevel)
+					console.log("Level 5 completed! Returning to Main Menu.");
+					displayFinish(app, () => goToMainMenu(app));
 				}
+				app.ticker.stop(); // Stop the game loop
+				return;
 			}
 		}
-	
+		
+		
 		// Check Tank-Obstacle Collisions
 		selectedObstacles.forEach((obstacle) => {
 			const obstacleRect = {
@@ -260,6 +280,7 @@ async function startGame(app) {
 	
 }
 function cleanupGame (app,tank,selectedEnemies){
+	hit = 0;
 	resetTankPosition(tank, app);
 	clearEnemies(app,selectedEnemies);
 	cleanupInput(app);
@@ -352,6 +373,37 @@ function restartGame(app) {
 	app.stage.addChild(background);
 
 	startGame(app);
+}
+
+function goToMainMenu(app) {
+    console.log("Returning to Main Menu...");
+	app.ticker.stop(); // Stop the game loop
+    app.stage.removeChildren(); // Clear all children from the stage
+
+    // Reload the site to reset everything
+    window.location.reload();
+}
+
+function goToNextLevel(app) {
+	currentLevel++;
+	app.stage.removeChildren();
+	const backgroundTexture = Assets.get("graphics/background/test.png");
+	const background = new TilingSprite({
+		texture: backgroundTexture,
+		width: app.screen.width,
+		height: app.screen.height,
+	});
+	background.width = app.screen.width;
+	background.height = app.screen.height;
+	app.stage.addChild(background); // Clear the stage
+	startGame(app);
+	// if (currentLevel < 5) {
+    //     currentLevel++;
+    //     startGame(app);
+    // } else {
+    //     console.log("Game completed!");
+    //     goToMainMenu(app);
+    // }
 }
 
 async function loadObstacles() {

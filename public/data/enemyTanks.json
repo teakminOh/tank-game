@@ -35,5 +35,15 @@
 			"image": "graphics/tanks/enemy-tank.png",
 			"direction": -90
 		}
+		,
+		{
+			"id": 5,
+			"x": 1400,
+			"y": 200,
+			"width": 31,
+			"height": 38,
+			"image": "graphics/tanks/enemy-tank.png",
+			"direction": -90
+		}
 	]
 }
