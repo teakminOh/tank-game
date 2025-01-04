@@ -1,4 +1,4 @@
-import { Application, Assets, AnimatedSprite, TilingSprite,Sprite} from "pixi.js";
+import { Application, Assets, AnimatedSprite, TilingSprite, Sprite, Text} from "pixi.js";
 import { createTank } from "./tank";
 import { setupInput, cleanupInput } from "./input";
 import { createStartScreen } from "./startScreen";
@@ -6,9 +6,11 @@ import { showGameOverScreen } from "./gameOverScreen";
 import { Bullet } from "./bullet";
 import { displayCongratulations } from "./congratulationsScreen";
 import { displayFinish } from "./finishGameScreen";
+import { displayPauseScreen } from "./pauseScreen";
 
 let currentLevel = 1;
 let hit = 0;
+
 
 const config = {
 	width: window.innerWidth,
@@ -50,12 +52,12 @@ async function initPixiApp() {
 	window.addEventListener("resize", resizeCanvas);
 
 	createStartScreen(app, async () => {
-		// window.removeEventListener("resize", resizeCanvas);
 		await startGame(app);
 	});
 
 	return app;
 }
+
 
 async function addExplosionEffect(app, x, y, string) {
     // Load explosion textures
@@ -87,26 +89,26 @@ async function addExplosionEffect(app, x, y, string) {
 }
 
 async function startGame(app) {
+	let hintText = null;
+	if (currentLevel === 1) {
+		hintText = displayHint(app); 
+    }
+	
 	const tank = await createTank(app);
-	
 	const obstacles = await loadObstacles();
-	
 	
 	const { enemyTanks, surroundedEnemyTanks } = await loadEnemyTanks();
 	
 	const selectedEnemyTanks = generateNonOverlappingObstacles(enemyTanks, tank, currentLevel); // Select 5 from enemyTanks.json
 	const selectedSurroundedEnemyTanks =  generateNonOverlappingObstacles(surroundedEnemyTanks, tank, 1);
-	//createSurroundedObstaclesForTank(selectedSurroundedEnemyTanks, obstacles);
 	selectedSurroundedEnemyTanks.forEach((tank) => {
 		createSurroundedObstaclesForTank(tank, obstacles);
 		});
-		// Combine selected tanks into one array
 	const selectedEnemies = [
 		...selectedEnemyTanks,
 		...selectedSurroundedEnemyTanks,
 		];
 	renderEntities(app, selectedEnemies);
-	console.log(obstacles);
 	app.ticker.start();
 	const difficulty = await loadDifficulty();
 			
@@ -115,21 +117,33 @@ async function startGame(app) {
 	const numberOfObstacles = difficulty[currentLevel-1].obstacleCount;
 	const selectedObstacles = generateNonOverlappingObstacles(obstacles, tank, numberOfObstacles);
 	renderEntities(app, selectedObstacles, { randomRotation: true });
-
-	//const selectedEnemies = getRandomItems(enemyTanks, 3);
 	
 	setupInput(app, tank, bullets);
 
+	// Display hint when level is 1
+
+
 	app.ticker.add(() => {
+		// Listening for pause
+		window.addEventListener("keydown", (event) => {
+			if (event.code === "Escape") {
+				if (app.ticker.started) {
+					console.log('kokot');
+					displayPauseScreen(app, () => {
+						app.ticker.start(); // Resume the game
+					});
+				}
+			}
+		});
+		
 		// Rotate obstacles (if applicable)
 		updateObstaclesRotation(selectedObstacles);
-	
+		
 		for (let i = bullets.length - 1; i >= 0; i--) {
 			const bullet = bullets[i];
 	
 			// Remove bullets that are off-screen
 			if (!bullet.update()) {
-				console.log("Bullet removed (out of screen)");
 				app.stage.removeChild(bullet.sprite);
 				bullets.splice(i, 1);
 				continue;
@@ -152,8 +166,8 @@ async function startGame(app) {
 				};
 	
 				if (checkCollision(bulletRect, obstacleRect)) {
-					console.log("Bullet hit an obstacle.");
 					addExplosionEffect(app, bullet.x, bullet.y,"explosion");
+					clearHint(app, hintText);
 					app.stage.removeChild(bullet.sprite); // Remove bullet sprite
 					bullets.splice(i, 1); // Remove bullet from array
 					break; // Exit obstacle collision loop
@@ -164,7 +178,9 @@ async function startGame(app) {
 				// Enemy bullet hitting the player's tank
 				if (checkBulletCollision(bullet, tank)) {
 					console.log("Player hit by enemy bullet! Game over.");
-					// addExplosionEffect(app, bullet.x, bullet.y,"e");
+
+					clearHint(app, hintText);
+
 					app.stage.removeChild(tank);
 					cleanupGame(app, tank, selectedEnemies);
 					return; // Exit ticker
@@ -193,21 +209,22 @@ async function startGame(app) {
 					}
 				}	
 			}
-			if (hit === currentLevel+1) {
+			if (hit === currentLevel + 1) {
 				hit = 0;
 				console.log("All enemies defeated!");
 				app.stage.removeChild(tank);
 				resetTankPosition(tank, app);
 				clearEnemies(app,selectedEnemies);
 				cleanupInput(app);
+				clearHint(app, hintText);
+			
 				if (currentLevel < 5) {
-					console.log(currentLevel)
 					displayCongratulations(app, () => goToNextLevel(app), currentLevel);
 				} else {
-					console.log(currentLevel)
 					console.log("Level 5 completed! Returning to Main Menu.");
 					displayFinish(app, () => goToMainMenu(app));
 				}
+				
 				app.ticker.stop(); // Stop the game loop
 				return;
 			}
@@ -232,8 +249,8 @@ async function startGame(app) {
 	
 			if (checkCollision(tankRect, obstacleRect)) {
 				console.log("Tank collided with an obstacle! Game over.");
-				// createExplosionEffect(app, tank.x, tank.y);
 				app.stage.removeChild(tank);
+				clearHint(app, hintText);
 				cleanupGame(app, tank, selectedEnemies);
 				return;
 			}
@@ -276,21 +293,45 @@ async function startGame(app) {
 				}
 			}
 		});
-	});
-	
+	});	
 }
-function cleanupGame (app,tank,selectedEnemies){
+
+function displayHint(app) {
+	const hintText = new Text(
+		"You can play using:\n- Arrow keys to move + Space to shoot\n- Mouse movement to move + LMB to shoot\n- Tilt your mobile device + tap to shoot\n\n Your goal? Destroy all the enemy tanks!",
+		{
+			fontSize: 24,
+			fill: "white",
+			align: "center",
+			fontFamily: 'PixelifySans',
+			wordWrap: true,
+			wordWrapWidth: app.screen.width - 40, // Wrap text if it's too long
+		}
+	);
+    hintText.x = app.screen.width / 2 - hintText.width / 2; // Center the text horizontally
+    hintText.y = app.screen.height / 2 + hintText.height ; // Center the text vertically
+    app.stage.addChild(hintText);
+    return hintText; // Return the text object to be able to remove it later
+}
+function clearHint(app, hint) {
+	if (hint) {
+		app.stage.removeChild(hint);
+		hint.destroy();
+	}	
+}
+function cleanupGame(app,tank,selectedEnemies) {
 	hit = 0;
 	resetTankPosition(tank, app);
 	clearEnemies(app,selectedEnemies);
 	cleanupInput(app);
 	endGame(app); 
 }
+
 function clearEnemies(app, enemies) {
     enemies.forEach((enemy) => {
         if (enemy.sprite) {
             app.stage.removeChild(enemy.sprite);
-            enemy.sprite.destroy(); // Destroy PIXI resources
+            enemy.sprite.destroy(); 
         }
     });
     enemies.length = 0; // Clear the array
@@ -397,13 +438,6 @@ function goToNextLevel(app) {
 	background.height = app.screen.height;
 	app.stage.addChild(background); // Clear the stage
 	startGame(app);
-	// if (currentLevel < 5) {
-    //     currentLevel++;
-    //     startGame(app);
-    // } else {
-    //     console.log("Game completed!");
-    //     goToMainMenu(app);
-    // }
 }
 
 async function loadObstacles() {
