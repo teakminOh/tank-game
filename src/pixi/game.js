@@ -45,7 +45,7 @@ async function initPixiApp() {
 	window.addEventListener("resize", resizeCanvas);
 
 	createStartScreen(app, async () => {
-		window.removeEventListener("resize", resizeCanvas);
+		// window.removeEventListener("resize", resizeCanvas);
 		await startGame(app);
 	});
 
@@ -117,53 +117,7 @@ async function startGame(app) {
 
 	setupInput(app, tank, bullets);
 
-	function handleWindowResize(app, selectedObstacles, selectedEnemies, tank) {
-		const previousWidth = app.renderer.width;
-		const previousHeight = app.renderer.height;
 	
-		app.renderer.resize(window.innerWidth, window.innerHeight);
-	
-		const scaleX = app.renderer.width / previousWidth;
-		const scaleY = app.renderer.height / previousHeight;
-	
-		// Adjust obstacle positions
-		selectedObstacles.forEach((obstacle) => {
-			obstacle.x *= scaleX;
-			obstacle.y *= scaleY;
-			if (obstacle.sprite) {
-				obstacle.sprite.x = obstacle.x;
-				obstacle.sprite.y = obstacle.y;
-			}
-		});
-	
-		// Adjust enemy tank positions
-		selectedEnemies.forEach((enemy) => {
-			if (enemy.sprite) {
-				enemy.sprite.x *= scaleX;
-				enemy.sprite.y *= scaleY;
-			}
-		});
-	
-		// Adjust player tank position
-		if (tank) {
-			tank.x *= scaleX;
-			tank.y *= scaleY;
-		}
-	}
-	
-	// Debounced Resize Event
-	let resizeTimeout;
-	function attachResizeListener(app, selectedObstacles, selectedEnemies, tank) {
-		window.addEventListener("resize", () => {
-			clearTimeout(resizeTimeout);
-			resizeTimeout = setTimeout(() => {
-				handleWindowResize(app, selectedObstacles, selectedEnemies, tank);
-			}, 100); // Debounce delay in milliseconds
-		});
-	}
-	
-	// In `startGame`, attach the listener
-	attachResizeListener(app, selectedObstacles, selectedEnemies, tank);
 	
 
 	app.ticker.add(() => {
