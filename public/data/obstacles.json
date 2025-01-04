@@ -2,56 +2,160 @@
 	"obstacles": [
 		{
 			"id": 1,
-			"x": 150,
-			"y": 150,
+			"x": 200,
+			"y": 50,
 			"width": 40,
 			"height": 40,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 2,
-			"x": 300,
-			"y": 400,
+			"x": 600,
+			"y": 100,
 			"width": 50,
 			"height": 50,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 3,
-			"x": 450,
-			"y": 150,
+			"x": 1000,
+			"y": 600,
 			"width": 40,
 			"height": 40,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 4,
-			"x": 1550,
-			"y": 150,
+			"x": 1200,
+			"y": 800,
 			"width": 45,
 			"height": 45,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 5,
-			"x": 1800,
-			"y": 150,
+			"x": 1400,
+			"y": 700,
 			"width": 45,
 			"height": 45,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 6,
-			"x": 2050,
-			"y": 150,
+			"x": 1600,
+			"y": 300,
 			"width": 45,
 			"height": 45,
 			"image": "graphics/obstacles/trap1.png"
 		},
 		{
 			"id": 7,
-			"x": 550,
+			"x": 1800,
 			"y": 500,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 8,
+			"x": 2200,
+			"y": 100,
+			"width": 40,
+			"height": 40,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 9,
+			"x": 500,
+			"y": 700,
+			"width": 50,
+			"height": 50,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 10,
+			"x": 750,
+			"y": 900,
+			"width": 40,
+			"height": 40,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 11,
+			"x": 1100,
+			"y": 400,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 12,
+			"x": 1350,
+			"y": 200,
+			"width": 40,
+			"height": 40,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 13,
+			"x": 1450,
+			"y": 600,
+			"width": 50,
+			"height": 50,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 14,
+			"x": 1600,
+			"y": 900,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 15,
+			"x": 1800,
+			"y": 300,
+			"width": 40,
+			"height": 40,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 16,
+			"x": 2000,
+			"y": 800,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 17,
+			"x": 2400,
+			"y": 100,
+			"width": 50,
+			"height": 50,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 18,
+			"x": 250,
+			"y": 550,
+			"width": 40,
+			"height": 40,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 19,
+			"x": 700,
+			"y": 850,
+			"width": 45,
+			"height": 45,
+			"image": "graphics/obstacles/trap1.png"
+		},
+		{
+			"id": 20,
+			"x": 1950,
+			"y": 650,
 			"width": 45,
 			"height": 45,
 			"image": "graphics/obstacles/trap1.png"
