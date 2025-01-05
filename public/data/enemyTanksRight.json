@@ -6,7 +6,7 @@
 			"y": 150,
 			"width": 31,
 			"height": 38,
-			"image": "graphics/tanks/enemy-tank.png",
+			"image": "graphics/tanks/enemy-tank-new.png",
             "direction": 270
 		},
 		{
@@ -15,7 +15,7 @@
 			"y": 220,
 			"width": 31,
 			"height": 38,
-			"image": "graphics/tanks/enemy-tank.png",
+			"image": "graphics/tanks/enemy-tank-new.png",
             "direction": 270
 		},
 		{
@@ -24,7 +24,7 @@
 			"y": 280,
 			"width": 31,
 			"height": 38,
-			"image": "graphics/tanks/enemy-tank.png",
+			"image": "graphics/tanks/enemy-tank-new.png",
             "direction": 270
 		},
 		{
@@ -33,7 +33,7 @@
 			"y": 350,
 			"width": 31,
 			"height": 38,
-			"image": "graphics/tanks/enemy-tank.png",
+			"image": "graphics/tanks/enemy-tank-new.png",
             "direction": 270
 		},
 		{
@@ -42,7 +42,7 @@
 			"y": 400,
 			"width": 31,
 			"height": 38,
-			"image": "graphics/tanks/enemy-tank.png",
+			"image": "graphics/tanks/enemy-tank-new.png",
             "direction": 270
 		},
 		{
@@ -51,7 +51,7 @@
 			"y": 460,
 			"width": 31,
 			"height": 38,
-			"image": "graphics/tanks/enemy-tank.png",
+			"image": "graphics/tanks/enemy-tank-new.png",
             "direction": 270
 		}
 	]
