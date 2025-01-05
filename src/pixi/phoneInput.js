@@ -90,6 +90,7 @@ export function setupPhoneInput(app, tank, bullets) {
 
     // Function to create joystick and shoot button
     function createJoystickAndButton() {
+        let joystickActive = false; 
         // Joystick base
         joystickBase = new Graphics();
         joystickBase.circle(0, 0, joystickBaseRadius);
@@ -125,6 +126,55 @@ export function setupPhoneInput(app, tank, bullets) {
         shootButton.interactive = true;
         shootButton.buttonMode = true;
         shootButton.on('pointerdown', () => handleShoot());
+
+        // Touch start: Activate joystick and position it
+    app.view.addEventListener('touchstart', (event) => {
+        const touch = event.touches[0];
+        if (touch.clientX < app.renderer.width / 2) { // Restrict to left side
+            joystickBase.x = touch.clientX;
+            joystickBase.y = touch.clientY;
+            joystickThumb.x = touch.clientX;
+            joystickThumb.y = touch.clientY;
+            joystickBase.alpha = 0.5;
+            joystickThumb.alpha = 0.8;
+            joystickActive = true;
+        }
+    });
+
+    // Touch move: Update joystick thumb and calculate delta
+    app.canvas.addEventListener('touchmove', (event) => {
+        if (!joystickActive) return;
+
+        const touch = event.touches[0];
+        const dx = touch.clientX - joystickBase.x;
+        const dy = touch.clientY - joystickBase.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= joystickBaseRadius) {
+            // Within joystick range
+            joystickThumb.x = touch.clientX;
+            joystickThumb.y = touch.clientY;
+        } else {
+            // Outside joystick range, clamp thumb to edge
+            const angle = Math.atan2(dy, dx);
+            joystickThumb.x = joystickBase.x + Math.cos(angle) * joystickBaseRadius;
+            joystickThumb.y = joystickBase.y + Math.sin(angle) * joystickBaseRadius;
+        }
+
+        // Calculate normalized delta (-1 to 1 range)
+        joystickDelta.x = (joystickThumb.x - joystickBase.x) / joystickBaseRadius;
+        joystickDelta.y = (joystickThumb.y - joystickBase.y) / joystickBaseRadius;
+    });
+
+    // Touch end: Deactivate joystick
+    app.canvas.addEventListener('touchend', () => {
+        joystickBase.alpha = 0;
+        joystickThumb.alpha = 0;
+        joystickActive = false;
+        joystickDelta = { x: 0, y: 0 }; // Reset movement
+    });
+
+    return joystickDelta;
     }
 
     function update() {
