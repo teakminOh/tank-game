@@ -1,4 +1,5 @@
 import { Container, Text, TextStyle } from 'pixi.js';
+const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry/i.test(navigator.userAgent);
 
 export function createStartScreen(app, onStart) {
     const startScreen = new Container();
@@ -117,10 +118,20 @@ function showControls(app, onBack) {
         align: 'center',
         fontFamily: 'PixelifySans',
     })
-    const controlsText = new Text({
-        text: `Move: Arrow Keys\nShoot: Spacebar`,
-        style: styleMove
-    });
+    let controlsText;
+    if(isMobile){
+        controlsText = new Text({
+            text: `Move: Joystick\nShoot: Shoot button`,
+            style: styleMove
+        });
+    }
+    else
+    {
+        controlsText = new Text({
+            text: `Move: Arrow Keys, Mouse\nShoot: Spacebar, MouseClick`,
+            style: styleMove
+        });
+    }
     controlsText.anchor.set(0.5);
     controlsText.x = app.screen.width / 2;
     controlsText.y = app.screen.height / 2;
