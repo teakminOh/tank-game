@@ -5,6 +5,7 @@ import {
 	TilingSprite,
 	Sprite,
 	Text,
+	TextStyle,
 } from "pixi.js";
 import { createTank } from "./tank";
 import { setupInput, cleanupInput } from "./input";
@@ -29,16 +30,16 @@ function saveProgress(level) {
 	console.log(`Progress saved: Level ${level}`);
 }
 
-function loadProgress() {
-	const savedLevel = localStorage.getItem("currentLevel");
-	if (savedLevel) {
-		console.log(`Progress loaded: Level ${savedLevel}`);
-		return parseInt(savedLevel, 10);
-	} else {
-		console.log("No saved progress found. Starting from Level 1");
-		return 1; // Default to level 1 if no saved progress exists
-	}
-}
+// function loadProgress() {
+// 	const savedLevel = localStorage.getItem("currentLevel");
+// 	if (savedLevel) {
+// 		console.log(`Progress loaded: Level ${savedLevel}`);
+// 		return parseInt(savedLevel, 10);
+// 	} else {
+// 		console.log("No saved progress found. Starting from Level 1");
+// 		return 1; // Default to level 1 if no saved progress exists
+// 	}
+// }
 
 async function initPixiApp() {
 	const app = new Application();
@@ -113,7 +114,7 @@ async function addExplosionEffect(app, x, y, string) {
 
 async function startGame(app) {
 	// Display hint when level is 1
-	currentLevel = loadProgress();
+	// currentLevel = loadProgress();
 	console.log(`Starting game at Level ${currentLevel}`);
 
 	let hintText = null;
@@ -138,7 +139,7 @@ async function startGame(app) {
 		]; 
 */
 	const { enemyTanks, enemyTanksCount } = await loadEnemyTanks(currentLevel);
-	const selectedEnemies = generateNonOverlappingObstacles(
+	const selectedEnemies = generateNonOverlappingObstaclesEnemyTanks(
 		enemyTanks,
 		tank,
 		enemyTanksCount
@@ -204,7 +205,6 @@ async function startGame(app) {
 
 				if (checkCollision(bulletRect, obstacleRect)) {
 					addExplosionEffect(app, bullet.x, bullet.y, "explosion");
-					clearHint(app, hintText);
 					app.stage.removeChild(bullet.sprite); // Remove bullet sprite
 					bullets.splice(i, 1); // Remove bullet from array
 					break; // Exit obstacle collision loop
@@ -215,9 +215,6 @@ async function startGame(app) {
 				// Enemy bullet hitting the player's tank
 				if (checkBulletCollision(bullet, tank)) {
 					console.log("Player hit by enemy bullet! Game over.");
-
-					clearHint(app, hintText);
-
 					app.stage.removeChild(tank);
 					cleanupGame(app, tank, selectedEnemies);
 					return; // Exit ticker
@@ -253,7 +250,9 @@ async function startGame(app) {
 				resetTankPosition(tank, app);
 				clearEnemies(app, selectedEnemies);
 				cleanupInput(app);
-				clearHint(app, hintText);
+				if(currentLevel == 1){
+					clearHint(app, hintText);
+				}
 
 				if (currentLevel < 5) {
 					saveProgress(currentLevel + 1);
@@ -291,7 +290,6 @@ async function startGame(app) {
 			if (checkCollision(tankRect, obstacleRect)) {
 				console.log("Tank collided with an obstacle! Game over.");
 				app.stage.removeChild(tank);
-				clearHint(app, hintText);
 				cleanupGame(app, tank, selectedEnemies);
 				return;
 			}
@@ -338,17 +336,19 @@ async function startGame(app) {
 }
 
 function displayHint(app) {
-	const hintText = new Text(
-		"You can play using:\n- Arrow keys to move + Space to shoot\n- Mouse movement to move + LMB to shoot\n- Tilt your mobile device + tap to shoot\n\n Your goal? Destroy all the enemy tanks!",
-		{
-			fontSize: 24,
+	const style = new TextStyle({
+		fontSize: 24,
 			fill: "white",
 			align: "center",
 			fontFamily: "PixelifySans",
 			wordWrap: true,
 			wordWrapWidth: app.screen.width - 40, // Wrap text if it's too long
-		}
-	);
+	})
+
+	const hintText = new Text({
+		text:"You can play using:\n- Arrow keys to move + Space to shoot\n- Mouse movement to move + LMB to shoot\n- Tilt your mobile device + tap to shoot\n\n Your goal? Destroy all the enemy tanks!",
+		style: style
+});
 	hintText.x = app.screen.width / 2 - hintText.width / 2; // Center the text horizontally
 	hintText.y = app.screen.height / 2 + hintText.height; // Center the text vertically
 	app.stage.addChild(hintText);
@@ -576,37 +576,94 @@ async function loadEnemyTanks(level) {
 }
 
 function generateNonOverlappingObstacles(obstacles, tank, count) {
-	const nonOverlappingObstacles = [];
-	const maxAttempts = 100; // Safeguard to prevent infinite loops
+    const nonOverlappingObstacles = [];
+    const maxAttempts = 100; // Safeguard to prevent infinite loops
 
-	const selectedObstacles = getRandomItems(obstacles, count); // Get a random set of obstacles
+    const selectedObstacles = getRandomItems(obstacles, count); // Get a random set of obstacles
 
-	selectedObstacles.forEach((obstacle) => {
-		let attempts = 0;
+    selectedObstacles.forEach((obstacle) => {
+        let attempts = 0;
 
-		// Check for collision and reposition until no collision or max attempts reached
-		while (
-			(isPositionColliding(obstacle, tank) ||
-				nonOverlappingObstacles.some((existing) =>
-					isPositionColliding(obstacle, existing)
-				)) &&
-			attempts < maxAttempts
-		) {
-			obstacle.x = Math.random() * (config.width - obstacle.width);
-			obstacle.y = Math.random() * (config.height - obstacle.height);
-			attempts++;
-		}
+        // Check for collision and reposition until no collision or max attempts reached
+        while (
+            (isPositionColliding(obstacle, tank) ||
+                nonOverlappingObstacles.some((existing) =>
+                    isPositionColliding(obstacle, existing)
+                ) ||
+                isOutOfScreenBounds(obstacle)) && // Ensure obstacle stays within bounds
+            attempts < maxAttempts
+        ) {
+            obstacle.x = Math.random() * (config.width - obstacle.width);
+            obstacle.y = Math.random() * (config.height - obstacle.height);
+            attempts++;
+        }
 
-		if (attempts < maxAttempts) {
-			nonOverlappingObstacles.push(obstacle);
-		} else {
-			console.warn(
-				"Failed to place obstacle without overlap after max attempts."
-			);
-		}
-	});
-	return nonOverlappingObstacles;
+        if (attempts < maxAttempts) {
+            nonOverlappingObstacles.push(obstacle);
+        } else {
+            console.warn(
+                "Failed to place obstacle without overlap after max attempts."
+            );
+        }
+    });
+    return nonOverlappingObstacles;
 }
+
+
+function generateNonOverlappingObstaclesEnemyTanks(obstacles, tank, count) {
+    const nonOverlappingObstacles = [];
+    const maxAttempts = 100; // Safeguard to prevent infinite loops
+    const axisBuffer = 50; // Buffer to prevent close placement on the same axis
+
+    const selectedObstacles = getRandomItems(obstacles, count); // Get a random set of obstacles
+
+    selectedObstacles.forEach((obstacle) => {
+        let attempts = 0;
+
+        // Check for collision and reposition until no collision or max attempts reached
+        while (
+            (isPositionColliding(obstacle, tank) ||
+                nonOverlappingObstacles.some((existing) =>
+                    isPositionColliding(obstacle, existing)
+                ) ||
+                isOutOfScreenBounds(obstacle) ||
+                isOnSameAxis(obstacle, tank, axisBuffer)) && // Ensure obstacle isn't on the same axis
+            attempts < maxAttempts
+        ) {
+            obstacle.x = Math.random() * (config.width - obstacle.width);
+            obstacle.y = Math.random() * (config.height - obstacle.height);
+            attempts++;
+        }
+
+        if (attempts < maxAttempts) {
+            nonOverlappingObstacles.push(obstacle);
+        } else {
+            console.warn(
+                "Failed to place obstacle without overlap after max attempts."
+            );
+        }
+    });
+    return nonOverlappingObstacles;
+}
+
+// Helper function to check if an obstacle is out of screen bounds
+function isOutOfScreenBounds(obstacle) {
+    return (
+        obstacle.x < 0 ||
+        obstacle.y < 0 ||
+        obstacle.x + obstacle.width > config.width ||
+        obstacle.y + obstacle.height > config.height
+    );
+}
+
+// Helper function to check if the obstacle is on the same axis as the tank
+function isOnSameAxis(obstacle, tank, buffer) {
+    return (
+        Math.abs(obstacle.x - tank.x) < buffer || 
+        Math.abs(obstacle.y - tank.y) < buffer
+    );
+}
+
 
 function getRandomItems(items, count) {
 	const shuffled = items.sort(() => 0.5 - Math.random());
