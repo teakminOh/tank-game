@@ -1,4 +1,6 @@
 import { Bullet } from './bullet';
+import { displayPauseScreen } from './pauseScreen';
+
 let updateReference;
 let inputListeners = {};
 export function setupInput(app, tank, bullets) {
@@ -38,6 +40,16 @@ export function setupInput(app, tank, bullets) {
         isMouseClicked = false;
     };
 
+    // Listening for pause
+    window.addEventListener("keydown", (event) => {
+        if (event.code === "Escape") {
+            if (app.ticker.started) {
+                displayPauseScreen(app, () => {
+                    app.ticker.start(); // Resume the game
+                });
+            }
+        }
+    });
     // Attach listeners
     window.addEventListener('keydown', handleKeydown);
     window.addEventListener('keyup', handleKeyup);
