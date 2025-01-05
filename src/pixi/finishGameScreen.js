@@ -8,7 +8,7 @@ export function displayFinish(app, goToMainMenu) {
     app.ticker.stop();
 
     const style = new TextStyle({
-        fontSize: 50,
+        fontSize: 40,
         fill: 0xffffff,
         align: "center",
         fontFamily: "PixelifySans",
@@ -20,7 +20,7 @@ export function displayFinish(app, goToMainMenu) {
     });
 
     const levelStyle = new TextStyle({
-        fontSize: 50,
+        fontSize: 35,
         fill: 0x00ff00,
         align: "center",
         fontFamily: "PixelifySans",
