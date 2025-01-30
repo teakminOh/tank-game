@@ -1,4 +1,5 @@
 import { Text, TextStyle, Container } from "pixi.js";
+import { displayDeathCount } from "./game";
 let handleKeydown, resizeHandler;
 
 export function showGameOverScreen(app, restartCallback) {
@@ -6,6 +7,7 @@ export function showGameOverScreen(app, restartCallback) {
 
     // Stop the ticker
     app.ticker.stop();
+    displayDeathCount(app, 1);
 
     const style = new TextStyle({
         fontSize: 50,

@@ -16,9 +16,13 @@ import { displayCongratulations } from "./congratulationsScreen";
 import { displayFinish } from "./finishGameScreen";
 import { setupPhoneInput , cleanupPhoneInput} from "./phoneInput";
 import { setupFullScreen } from "./fullscreen";
+import { sounds } from "./soundManager";
 
 let currentLevel = 1;
 let hit = 0;
+let deathCount = 0;
+
+let activeExplosions = []; // Array to store active explosions
 const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry/i.test(navigator.userAgent);
 const config = {
 	width: window.innerWidth,
@@ -30,9 +34,13 @@ function saveProgress(level) {
 	localStorage.setItem("currentLevel", level);
 	console.log(`Progress saved: Level ${level}`);
 }
+function saveDeathProgress(deathCount) {
+	localStorage.setItem("deathCount", deathCount);
+	console.log(`Progress saved: deathCount ${deathCount}`);
+}
 
-function loadProgress() {
-	const savedLevel = localStorage.getItem("currentLevel");
+function loadLevelProgress() {
+	const savedLevel = localStorage.getItem("currentLevel")
 	if (savedLevel) {
 		console.log(`Progress loaded: Level ${savedLevel}`);
 		return parseInt(savedLevel, 10);
@@ -40,10 +48,23 @@ function loadProgress() {
 		console.log("No saved progress found. Starting from Level 1");
 		return 1; // Default to level 1 if no saved progress exists
 	}
-	// return 1;
+}
+
+function loadDeathProgress() {
+	const savedDeathCount = localStorage.getItem("deathCount");
+
+	if (savedDeathCount) {
+		console.log(`Progress loaded: DeathCount ${savedDeathCount}`);
+		return parseInt(savedDeathCount);
+	} else {
+		console.log("No saved progress found. Starting from DeathCount 1");
+		return 0; // Default to DeathCount 1 if no saved progress exists
+	}
 }
 
 async function initPixiApp() {
+	deathCount = loadDeathProgress();
+	sounds.music.play();
 	const app = new Application();
 	await app.init(config);
 
@@ -87,45 +108,54 @@ async function initPixiApp() {
 }
 
 async function addExplosionEffect(app, x, y, string) {
-	// Load explosion textures
+	console.log(`Creating explosion at (${x}, ${y})`);
 	const explosionFrames = [];
 	for (let i = 1; i <= 6; i++) {
-		const texture = await Assets.load(
-			`graphics/explosions/${string}${i}.png`
-		);
-		explosionFrames.push(texture);
+			const texture = await Assets.load(
+					`graphics/explosions/${string}${i}.png`
+			);
+			explosionFrames.push(texture);
 	}
 
-	// Create an animated sprite
 	const explosion = new AnimatedSprite(explosionFrames);
 	explosion.x = x;
 	explosion.y = y;
 	explosion.width = 30;
 	explosion.height = 30;
 	explosion.anchor.set(0.5, 0.5);
-	explosion.animationSpeed = 0.3; // Adjust speed
-	explosion.loop = false; // Play once
+	explosion.animationSpeed = 0.3;
+	explosion.loop = false;
 
-	// Add to stage and play
 	app.stage.addChild(explosion);
 	explosion.play();
 
-	// Remove explosion after animation finishes
+	activeExplosions.push(explosion);
+
 	explosion.onComplete = () => {
-		app.stage.removeChild(explosion);
-		explosion.destroy(); // Clean up resources
+			console.log(`Removing explosion at (${x}, ${y})`);
+			app.stage.removeChild(explosion);
+			explosion.destroy();
+
+			const index = activeExplosions.indexOf(explosion);
+			if (index !== -1) {
+					activeExplosions.splice(index, 1);
+			}
 	};
 }
 
+
 async function startGame(app) {
-	// Display hint when level is 1
-	currentLevel = loadProgress();
+	currentLevel = loadLevelProgress();
 	console.log(`Starting game at Level ${currentLevel}`);
+	
+	let text = displayDeathCount(app, 0);
 
 	let hintText = null;
 	if (currentLevel === 1) {
 		hintText = displayHint(app);
 	}
+
+	displayLevel(app);
 
 	const tank = await createTank(app);
 	const obstacles = await loadObstacles();
@@ -148,14 +178,15 @@ async function startGame(app) {
 	app.ticker.start();
 
 	const difficulty = await loadDifficulty();
+	let bullets = [];
 
 	await Assets.load("graphics/bullets/bullet.png");
-	let bullets = [];
+	
 	let numberOfObstacles = difficulty[currentLevel - 1].obstacleCount;
 	if(isMobile){
 		numberOfObstacles =currentLevel *3;
 	}
-	const selectedObstacles = generateNonOverlappingObstacles(
+	let selectedObstacles = generateNonOverlappingObstacles(
 		obstacles,
 		tank,
 		numberOfObstacles
@@ -234,8 +265,10 @@ async function startGame(app) {
 				if (checkBulletCollision(bullet, tank)) {
 					console.log("Player hit by enemy bullet! Game over.");
 					app.stage.removeChild(tank);
-					cleanupGame(app, tank, selectedEnemies);
-					clearHint(app, hintText);
+					cleanupGame(app, tank, selectedEnemies, selectedObstacles);
+					clearText(app,text)
+					deathCount++;
+					saveDeathProgress(deathCount);
 					return; // Exit ticker
 				}
 			} else {
@@ -246,6 +279,7 @@ async function startGame(app) {
 						enemy.sprite &&
 						checkBulletCollision(bullet, enemy.sprite)
 					) {
+						sounds.explosion.play();
 						hit++;
 						console.log("Enemy tank destroyed by player's bullet!");
 
@@ -274,7 +308,7 @@ async function startGame(app) {
 					}
 					cleanupInput(app);
 					if(currentLevel == 1){
-						clearHint(app, hintText);
+						clearText(app, hintText);
 					}
 	
 					if (currentLevel < 5) {
@@ -305,7 +339,7 @@ async function startGame(app) {
 					}
 					cleanupInput(app);
 					if(currentLevel == 1){
-						clearHint(app, hintText);
+						clearText(app, hintText);
 					}
 	
 					if (currentLevel < 5) {
@@ -345,8 +379,10 @@ async function startGame(app) {
 			if (checkCollision(tankRect, obstacleRect)) {
 				console.log("Tank collided with an obstacle! Game over.");
 				app.stage.removeChild(tank);
-				cleanupGame(app, tank, selectedEnemies);
-				clearHint(app, hintText);
+				cleanupGame(app, tank, selectedEnemies, selectedObstacles);
+				clearText(app,text)
+				deathCount++
+				saveDeathProgress(deathCount);
 				return;
 			}
 		});
@@ -371,8 +407,10 @@ async function startGame(app) {
 				if (checkCollision(tankRect, enemyRect)) {
 					console.log("Collision with enemy tank! Game over.");
 					app.stage.removeChild(tank);
-					cleanupGame(app, tank, selectedEnemies);
-					clearHint(app, hintText);
+					cleanupGame(app, tank, selectedEnemies, selectedObstacles);
+					clearText(app,text)
+					deathCount++;
+					saveDeathProgress(deathCount);
 					return;
 				}
 
@@ -395,6 +433,61 @@ async function startGame(app) {
 			}
 		});
 	});
+}
+function displayLevel(app) {
+	const style = new TextStyle({
+			fontSize: 34,
+			fill: "white",
+			align: "center",
+			fontFamily: "PixelifySans",
+	});
+
+	// Set the hint text based on the device
+	const levelTextContent = `Level: ${currentLevel}`
+	
+
+	const levelText = new Text({
+	text: levelTextContent, 
+	style: style
+});
+		// levelText.x = app.screen.width / 2 - levelText.width / 2; // Center the text horizontally
+    // levelText.y = app.screen.height / 2 - levelText.height / 2; // Center the text vertically
+		levelText.x = 10; // 10px padding from the right edge
+		levelText.y = 10; // 10px padding from the top edge
+    app.stage.addChild(levelText);
+
+    return levelText; // Return the text object to be able to remove it later
+}
+
+export function displayDeathCount(app, gameOverScreen) {
+	const style = new TextStyle({
+			fontSize: 34,
+			fill: "yellow",
+			align: "center",
+			fontFamily: "PixelifySans",
+	});
+
+	// Set the hint text based on the device
+	let deathCountTextContent; 
+
+	if (gameOverScreen){
+		deathCountTextContent = `Deaths: ${deathCount+1}`
+	}
+	else{
+		deathCountTextContent = `Deaths: ${deathCount}`
+	}
+
+	const deathCountText = new Text({
+	text: deathCountTextContent, 
+	style: style
+});
+		deathCountText.x = app.screen.width - deathCountText.width - 10; // 10px padding from the right edge
+		deathCountText.y = 10; // 10px padding from the top edge
+// Center the text horizontally
+    // deathCountText.y = app.screen.height / 2 - deathCountText.height / 2; // Center the text vertically
+    app.stage.addChild(deathCountText);
+
+    return deathCountText; // Return the text object to be able to remove it later
 }
 
 function displayHint(app) {
@@ -427,16 +520,24 @@ function displayHint(app) {
     return hintText; // Return the text object to be able to remove it later
 }
 
-function clearHint(app, hint) {
+function clearText(app, hint) {
 	if (hint) {
 		app.stage.removeChild(hint);
 		hint.destroy();
 	}
 }
-function cleanupGame(app, tank, selectedEnemies) {
+function removeExplosions(app){
+	activeExplosions.forEach((explosion) => {
+		app.stage.removeChild(explosion);
+		explosion.destroy(); // Clean up resources
+	});
+}
+function cleanupGame(app, tank, selectedEnemies,selectedObstacles) {
 	hit = 0;
 	resetTankPosition(tank, app);
 	clearEnemies(app, selectedEnemies);
+	clearEnemies(app,selectedObstacles);
+	removeExplosions(app);
 	if(isMobile){
 		cleanupPhoneInput(app);
 	}
@@ -537,6 +638,7 @@ function goToMainMenu(app) {
 	app.ticker.stop(); // Stop the game loop
 	app.stage.removeChildren(); // Clear all children from the stage
 	localStorage.removeItem('currentLevel');
+	localStorage.removeItem('deathCount');
 	// Reload the site to reset everything
 	window.location.reload();
 }

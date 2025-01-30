@@ -5,7 +5,7 @@ let updateReference;
 let eventListeners = []; // Global array to store event listeners
 
 export function setupPhoneInput(app, tank, bullets) {
-    const speed = 2;
+    const speed = 5;
     const shootCooldown = 800; // Cooldown between shots in milliseconds
     let canShoot = true; // Control shoot cooldown
 

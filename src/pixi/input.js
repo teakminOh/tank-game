@@ -1,5 +1,6 @@
 import { Bullet } from './bullet';
 import { displayPauseScreen } from './pauseScreen';
+import { sounds } from './soundManager';
 
 let updateReference;
 let inputListeners = {};
@@ -7,8 +8,9 @@ export function setupInput(app, tank, bullets) {
     const speed = 4;
     const keys = {};
     let tankRadius = 10;
-    let canShoot = true; // Cooldown kontrola
-    const shootCooldown = 800; // Čas medzi výstrelmi v milisekundách
+    let canShoot = true; // Cooldown control
+    const shootCooldown = 800; // Time between shots in milliseconds
+    let isMoving = false; // Track if the tank is moving
 
     // Initialize mouse coordinates to the center of the screen
     let mouseX = app.renderer.width / 2;
@@ -63,12 +65,15 @@ export function setupInput(app, tank, bullets) {
             return;
         }
 
+        let tankMoved = false; // Track if the tank moved during this frame
+
         if (lastControl === 'mouse') {
             const dx = mouseX - tank.x;
             const dy = mouseY - tank.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > tankRadius) {
+                tankMoved = true;
                 if (Math.abs(dx) > Math.abs(dy)) {
                     if (dx > 0 && tank.x < app.renderer.width - tank.width / 2) {
                         tank.x += speed;
@@ -91,19 +96,32 @@ export function setupInput(app, tank, bullets) {
             if (keys['ArrowUp'] && !keys['ArrowDown'] && tank.y > tank.height / 2) {
                 tank.y -= speed;
                 tank.rotation = 0;
+                tankMoved = true;
             } else if (keys['ArrowDown'] && !keys['ArrowUp'] && tank.y < app.renderer.height - tank.height / 2) {
                 tank.y += speed;
                 tank.rotation = Math.PI;
+                tankMoved = true;
             } else if (keys['ArrowLeft'] && !keys['ArrowRight'] && tank.x > tank.width / 2) {
                 tank.x -= speed;
                 tank.rotation = -Math.PI / 2;
+                tankMoved = true;
             } else if (keys['ArrowRight'] && !keys['ArrowLeft'] && tank.x < app.renderer.width - tank.width / 2) {
                 tank.x += speed;
                 tank.rotation = Math.PI / 2;
+                tankMoved = true;
             }
         }
 
-        // Streľba
+        // Play or stop the tank move sound based on movement
+        if (tankMoved && !isMoving) {
+            sounds.tankMove.play();
+            isMoving = true;
+        } else if (!tankMoved && isMoving) {
+            sounds.tankMove.stop();
+            isMoving = false;
+        }
+
+        // Shooting logic
         if ((keys['Space'] || isMouseClicked) && canShoot) {
             canShoot = false;
 
@@ -112,9 +130,11 @@ export function setupInput(app, tank, bullets) {
 
             setTimeout(() => {
                 canShoot = true;
+                sounds.fire.play();
             }, shootCooldown);
         }
     }
+
     // Add update function to the ticker
     updateReference = update;
     app.ticker.add(update);
@@ -135,4 +155,7 @@ export function cleanupInput(app) {
         app.ticker.remove(updateReference);
         updateReference = null;
     }
+
+    // Stop the tank move sound when cleaning up input
+    sounds.tankMove.stop();
 }
