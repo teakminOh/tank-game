@@ -1,4 +1,4 @@
-## Tanky
+## ![tanks-GoogleChrome2025-02-1811-37-20-ezgif com-optimize](https://github.com/user-attachments/assets/2d335d63-e1d9-499f-ac74-e32f9d7eb6cc) Tanky
 ![icons8-tank-emoji-32](https://github.com/user-attachments/assets/1ddb6c3e-42c4-4ff6-9d7c-b0b33e33cbf3)
 Tento projekt je 2D tanková hra postavená na **Pixi.js**, kde hráči ovládajú tank, strieľajú projektily a bojujú proti nepriateľom na dynamickom bojisku. Hra obsahuje rôzne úrovne, prekážky, zvukové efekty a animácie explózií.
 
