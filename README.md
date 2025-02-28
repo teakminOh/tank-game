@@ -44,8 +44,7 @@ This project is a 2D tank game built with **Pixi.js**, where players control a t
 
 ## 📷 Gameplay Preview  
 
-![tanks-GoogleChrome2025-02-1811-37-20-ezgif com-optimize](https://github.com/user-attachments/assets/2d335d63-e1d9-499f-ac74-e32f9d7eb6cc)  
-
+![tanks-GoogleChrome2025-02-1811-37-20-ezgif com-optimize](https://github.com/user-attachments/assets/2d335d63-e1d9-499f-ac74-e32f9d7eb6cc)
 ![tanks-GoogleChrome2025-02-1811-36-22-ezgif com-optimize](https://github.com/user-attachments/assets/150e6bb3-04dd-48f7-a44a-018b14147980)  
 
 ---
